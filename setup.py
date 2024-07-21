@@ -1,12 +1,12 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.2'
+VERSION = '0.0.1'
 DESCRIPTION = "Clinic Description Annotator"
-LONG_DESCRIPTION = "An annotator for people easily annotate clinic descriptions."
+LONG_DESCRIPTION = "An fhir_cda for people easily annotate clinic descriptions."
 
 setup(
     # the name must match the package name - verysimpletest
-    name="digitaltwin description annotator for Sparc dataset",
+    name="fhir_cda",
     version=VERSION,
     author="LinkunGao",
     author_email="gaolinkun123@gmail.com",
