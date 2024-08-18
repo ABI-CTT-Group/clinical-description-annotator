@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-VERSION = '0.0.1'
+VERSION = '1.0.1'
 DESCRIPTION = "Clinic Description Annotator"
 LONG_DESCRIPTION = "An fhir_cda for people easily annotate clinic descriptions."
 
