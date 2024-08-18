@@ -25,6 +25,7 @@ class Annotator:
         self.descriptions["dataset"] = {
             "id": "",
             "uuid": "",
+            "name": self.root.name,
             "path": "/",
         }
 
@@ -36,9 +37,10 @@ class Annotator:
             patient = {
                 "id": "",
                 "uuid": "",
+                "name": p.name,
                 "path": p.relative_to(self.root).as_posix(),
                 "observations": [],
-                "imaging_study": self._analysis_dicom_study_samples(p)
+                "imagingStudy": self._analysis_dicom_study_samples(p)
             }
             self.descriptions["patients"].append(patient)
 
@@ -46,7 +48,7 @@ class Annotator:
 
         if study.exists():
             imaging_study = {
-                "endpoint_url": "",
+                "endpointUrl": "",
                 "path": study.relative_to(self.root).as_posix(),
                 "series": []
             }
@@ -78,10 +80,11 @@ class Annotator:
 
             suid = s_dicom_file.get((0x0020, 0x000e), None)
             s = {
-                "endpoint_url": "",
+                "endpointUrl": "",
                 "uid": suid.value if suid is not None else "",
-                "number_of_instance": len(dcm_files),
-                "body_site": body_site,
+                "name": sam.name,
+                "numberOfInstances": len(dcm_files),
+                "bodySite": body_site,
                 "instances": self._analysis_dicom_sample_instances(dcm_files)
             }
             return s
@@ -114,8 +117,8 @@ class Annotator:
 
             instance = {
                 "uid": dcm[(0x0008, 0x0018)].value,
-                "sop_class_uid": sop_class_uid,
-                "sop_class_name": sop_class_name,
+                "sopClassUid": sop_class_uid,
+                "sopClassName": sop_class_name,
                 "number": dcm[(0x0020, 0x0013)].value
             }
             instances.append(instance)
