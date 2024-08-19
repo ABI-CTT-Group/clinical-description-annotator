@@ -12,12 +12,12 @@ class Test:
         annotator = Annotator("./dataset/dataset-sparc")
 
         #
-        m = Measurement(value="0.15", code="21889-1", units="cm")
+        m = Measurement(value="0.15", code="21889-1", unit="cm")
         annotator.add_measurements(["sub-001"], [m]).save()
 
-        annotator.add_measurements("sub-002", Measurement(value="25", code="30525-0", units="year", code_system="http://loinc.org"))
+        annotator.add_measurements("sub-002", Measurement(value="25", code="30525-0", unit="year", code_system="http://loinc.org"))
 
-        annotator.add_measurements(["sub-001", "sub-002"], Measurement(value="170", code="8302-2", units="cm"))
+        annotator.add_measurements(["sub-001", "sub-002"], Measurement(value="170", code="8302-2", unit="cm"))
 
         annotator.save()
 
