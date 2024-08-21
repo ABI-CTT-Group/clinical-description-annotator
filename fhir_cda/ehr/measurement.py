@@ -1,36 +1,31 @@
-from typing import Union
+from typing import Optional
+from .elements import ObservationValue
 
 
 class Measurement:
-    def __init__(self, value: Union[str, int, float], code: str, units: str, code_system="http://loinc.org",
-                 units_system="http://unitsofmeasure.org"):
+    def __init__(self, value: ObservationValue, code: str, code_system="http://loinc.org",
+                 display: Optional[str] = None):
 
-        if not isinstance(value, (str, int, float)) or isinstance(value, bool):
-            raise ValueError(f"value={value} is not an instance of any of the types in the tuple (str, int, float)")
+        if not isinstance(value, ObservationValue):
+            raise ValueError(f"value={value} is not an ObservationValue type")
         elif not isinstance(code, str):
             raise ValueError(f"code={code} is not an instance of type str")
-        elif not isinstance(units, str):
-            raise ValueError(f"units={units} is not an instance of type str")
-        elif not isinstance(code_system, str):
-            raise ValueError(f"value_system={code_system} is not an instance of type str")
-        elif not isinstance(units_system, str):
-            raise ValueError(f"units_system={units_system} is not an instance of type str")
+        elif display is not None and not isinstance(display, str):
+            raise ValueError(f"display={display} is not an instance of type str")
 
         self.value = value
         self.code = code
-        self.units = units
         self.code_system = code_system
-        self.units_system = units_system
+        self.display = display
 
     def __repr__(self):
-        return (f"Measurement(value={self.value}, code='{self.code}', units='{self.units}', "
-                f"value_system='{self.code_system}', units_system='{self.units_system}')")
+        return (f"Measurement(value={self.value}, code='{self.code}', value_system='{self.code_system}')")
 
     def get(self):
-        return {
-            "value": self.value,
+        measurement = {
+            "value": self.value.get(),
             "code": self.code,
-            "units": self.units,
             "codeSystem": self.code_system,
-            "unitsSystem": self.units_system
+            "display": self.display if isinstance(self.display, str) else ""
         }
+        return {k: v for k, v in measurement.items() if v not in ("", None)}
