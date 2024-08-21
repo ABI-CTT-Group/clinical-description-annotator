@@ -11,34 +11,66 @@ from fhir_cda.ehr import Measurement, ObservationValue, Quantity
 
 annotator = Annotator("./dataset/dataset-sparc")
 
-m = Measurement(value=ObservationValue(value_quantity=Quantity(value=30, unit="year", code="a")),
-                        code="30525-0")
+m = Measurement(
+    value=ObservationValue(
+        value_quantity=Quantity(
+            value=30, 
+            unit="year",
+            code="a")),
+    code="30525-0")
 
 annotator.add_measurements("sub-001", m).save()
 ```
 - Add measurements for one patient
 ```py
-m1 = Measurement(value=ObservationValue(value_quantity=Quantity(value=0.15, unit="cm", code="cm")),
-                        code="21889-1")
-m2 = Measurement(value=ObservationValue(value_quantity=Quantity(value=0.15, unit="cm", code="cm", system="http://unitsofmeasure.org")),
-                        code="21889-1", code_system="http://loinc.org", display="Size Tumor")
+m1 = Measurement(
+    value=ObservationValue(
+        value_quantity=Quantity(
+            value=0.15, 
+            unit="cm", 
+            code="cm")),
+    code="21889-1")
+m2 = Measurement(
+    value=ObservationValue(
+        value_quantity=Quantity(
+            value=0.15, 
+            unit="cm", 
+            code="cm", 
+            system="http://unitsofmeasure.org")),
+    code="21889-1", 
+    code_system="http://loinc.org", 
+    display="Size Tumor")
 annotator.add_measurements("sub-001", [m1, m2]).save()
 ```
 
 - Add measurement for multiple patients
 ```py
-m = Measurement(value=ObservationValue(value_string="Female"),
-                        code="99502-7", display="Recorded sex or gender", code_system="http://loinc.org")
+m = Measurement(
+    value=ObservationValue(value_string="Female"),
+    code="99502-7", 
+    display="Recorded sex or gender", 
+    code_system="http://loinc.org")
 annotator.add_measurements(["sub-001", "sub-002"], m).save()
 ```
 
 - A measurements for multiple patients
 
 ```py
-m1 = Measurement(value=ObservationValue(value_string="Female"),
-                        code="99502-7", display="Recorded sex or gender", code_system="http://loinc.org")
-m2 = Measurement(value=ObservationValue(value_quantity=Quantity(value=0.15, unit="cm", code="cm", system="http://unitsofmeasure.org")),
-                        code="21889-1", code_system="http://loinc.org", display="Size Tumor")
+m1 = Measurement(
+    value=ObservationValue(value_string="Female"),
+    code="99502-7", 
+    display="Recorded sex or gender", 
+    code_system="http://loinc.org")
+m2 = Measurement(
+    value=ObservationValue(
+        value_quantity=Quantity(
+            value=0.15, 
+            unit="cm", 
+            code="cm", 
+            system="http://unitsofmeasure.org")),
+    code="21889-1", 
+    code_system="http://loinc.org", 
+    display="Size Tumor")
 annotator.add_measurements(["sub-001", "sub-002"], [m1, m2])
 annotator.save()
 ```
