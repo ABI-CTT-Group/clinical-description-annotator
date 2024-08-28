@@ -4,7 +4,7 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/fhir-cda)
 
 Annotator for annotating measurement results, workflows, workflow tools, models, and workflow tool process datasets in
-SPARC SDS datasets to the data format required for digitaltwins-on-fhir.
+SPARC SDS datasets to the data format required for [digitaltwins-on-fhir](https://pypi.org/project/digitaltwins-on-fhir/).
 
 ## Usage
 
