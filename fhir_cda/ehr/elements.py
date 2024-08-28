@@ -170,3 +170,15 @@ class ObservationValue:
             "valuePeriod": self.value_period.get() if isinstance(self.value_period, Period) else None
         }
         return {k: v for k, v in value.items() if v not in ("", None)}
+
+
+class WorkflowGoal:
+
+    def __init__(self, description: str):
+        self.description = description
+
+    def get(self):
+        goal = {
+            "description": self.description.get() if isinstance(self.description, str) else None,
+        }
+        return {k: v for k, v in goal.items() if v not in ("", None, [])}
