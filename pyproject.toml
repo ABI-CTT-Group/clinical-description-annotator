@@ -31,9 +31,9 @@ requires-python = ">=3.9"
 test = ["pytest>=6.2.4"]
 
 [project.urls]
-Homepage = "https://github.com/Copper3D-brids/clinic-description-annotator"
-Documentation = "https://github.com/Copper3D-brids/clinic-description-annotator#readme"
-Source = "https://github.com/Copper3D-brids/clinic-description-annotator.git"
+Homepage = "https://github.com/ABI-CTT-Group/clinical-description-annotator"
+Documentation = "https://github.com/ABI-CTT-Group/clinical-description-annotator#readme"
+Source = "https://github.com/ABI-CTT-Group/clinical-description-annotator.git"
 
 [tool.coverage.report]
 exclude_also = [
