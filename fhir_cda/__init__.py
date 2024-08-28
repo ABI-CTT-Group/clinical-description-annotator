@@ -1,7 +1,7 @@
 from .core import Annotator
 
 __title__ = "fhir_cda"
-__version__ = "1.0.5"
+__version__ = "1.0.6"
 __author__ = "Linkun Gao"
 __license__ = "Apache-2.0"
 __copyright__ = "Copyright 2024 ABI"
