@@ -9,7 +9,7 @@ class Test:
 
     def test_annotator(self):
         start_time = time.time()
-        annotator = Annotator("./dataset/dataset-sparc")
+        annotator = Annotator("./dataset/dataset-sparc").measurements()
 
         #
         m = Measurement(value=ObservationValue(value_quantity=Quantity(value=30, unit="year", code="a")),

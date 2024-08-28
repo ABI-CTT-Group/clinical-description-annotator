@@ -9,7 +9,7 @@
 from fhir_cda import Annotator
 from fhir_cda.ehr import Measurement, ObservationValue, Quantity
 
-annotator = Annotator("./dataset/dataset-sparc")
+annotator = Annotator("./dataset/dataset-sparc").measurements()
 
 m = Measurement(
     value=ObservationValue(
