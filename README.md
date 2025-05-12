@@ -8,17 +8,17 @@ SPARC SDS datasets to the data format required for [digitaltwins-on-fhir](https:
 
 ## Usage
 
-## Annotator measurements for SPARC SDS dataset
+## Annotate the measurements data for SPARC SDS dataset
 
 - Add measurement for one patient
 
 ```py
 from fhir_cda import Annotator
-from fhir_cda.ehr import Measurement, ObservationValue, Quantity
+from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity
 
 annotator = Annotator("./dataset/dataset-sparc").measurements()
 
-m = Measurement(
+m = ObservationMeasurement(
     value=ObservationValue(
         value_quantity=Quantity(
             value=30,
@@ -32,14 +32,14 @@ annotator.add_measurements("sub-001", m).save()
 - Add measurements for one patient
 
 ```py
-m1 = Measurement(
+m1 = ObservationMeasurement(
     value=ObservationValue(
         value_quantity=Quantity(
             value=0.15,
             unit="cm",
             code="cm")),
     code="21889-1")
-m2 = Measurement(
+m2 = ObservationMeasurement(
     value=ObservationValue(
         value_quantity=Quantity(
             value=0.15,
@@ -55,7 +55,7 @@ annotator.add_measurements("sub-001", [m1, m2]).save()
 - Add measurement for multiple patients
 
 ```py
-m = Measurement(
+m = ObservationMeasurement(
     value=ObservationValue(value_string="Female"),
     code="99502-7",
     display="Recorded sex or gender",
@@ -66,12 +66,12 @@ annotator.add_measurements(["sub-001", "sub-002"], m).save()
 - A measurements for multiple patients
 
 ```py
-m1 = Measurement(
+m1 = ObservationMeasurement(
     value=ObservationValue(value_string="Female"),
     code="99502-7",
     display="Recorded sex or gender",
     code_system="http://loinc.org")
-m2 = Measurement(
+m2 = ObservationMeasurement(
     value=ObservationValue(
         value_quantity=Quantity(
             value=0.15,

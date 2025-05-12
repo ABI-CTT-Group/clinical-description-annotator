@@ -1,18 +1,18 @@
-from pathlib import Path
+from abc import ABC
+from .abstract_annotator import AbstractAnnotator
 import pydicom
 from pydicom.uid import UID
 from fhir_cda.terms import SNOMEDCT
-from fhir_cda.ehr import Measurement
+from fhir_cda.ehr import ObservationMeasurement
 import json
 from concurrent.futures import ThreadPoolExecutor
 import os
 
 
-class MeasurementAnnotator:
+class MeasurementAnnotator(AbstractAnnotator, ABC):
 
     def __init__(self, dataset_path):
-        self.root = Path(dataset_path)
-        self.descriptions = {}
+        super().__init__(dataset_path, "measurements")
         self._analysis_dataset()
 
     def _analysis_dataset(self):
@@ -23,10 +23,8 @@ class MeasurementAnnotator:
                 'The dataset structure is not based on a SPARC SDS dataset format, please check it and try again!')
 
         self.descriptions["dataset"] = {
-            "id": "",
             "uuid": "",
             "name": self.root.name,
-            "path": "/",
         }
 
         self.descriptions["patients"] = []
@@ -35,12 +33,11 @@ class MeasurementAnnotator:
 
         for p in patients_dir:
             patient = {
-                "id": "",
                 "uuid": "",
                 "name": p.name,
-                "path": p.relative_to(self.root).as_posix(),
                 "observations": [],
-                "imagingStudy": self._analysis_dicom_study_samples(p)
+                "imagingStudy": [self._analysis_dicom_study_samples(p)],
+                "documentReference": [],
             }
             self.descriptions["patients"].append(patient)
 
@@ -49,7 +46,6 @@ class MeasurementAnnotator:
         if study.exists():
             imaging_study = {
                 "endpointUrl": "",
-                "path": study.relative_to(self.root).as_posix(),
                 "series": []
             }
             sams = [x for x in study.iterdir() if x.is_dir()]
@@ -132,7 +128,7 @@ class MeasurementAnnotator:
         if isinstance(subjects, list) and isinstance(measurement, list):
             for s in subjects:
                 self.add_measurements_by_subject(s, measurement)
-        elif isinstance(subjects, list) and isinstance(measurement, Measurement):
+        elif isinstance(subjects, list) and isinstance(measurement, ObservationMeasurement):
             m = measurement
             for s in subjects:
                 self.add_measurement_by_subject(s, m)
@@ -140,7 +136,7 @@ class MeasurementAnnotator:
             s = subjects
             for m in measurement:
                 self.add_measurement_by_subject(s, m)
-        elif isinstance(subjects, str) and isinstance(measurement, Measurement):
+        elif isinstance(subjects, str) and isinstance(measurement, ObservationMeasurement):
             s = subjects
             m = measurement
             self.add_measurement_by_subject(s, m)
@@ -156,23 +152,17 @@ class MeasurementAnnotator:
     def add_measurement_by_subject(self, subject, measurement):
         if not isinstance(subject, str):
             raise ValueError(f"subject={subject} is not an instance of type str")
-        if not isinstance(measurement, Measurement):
+        if not isinstance(measurement, ObservationMeasurement):
             raise ValueError(f"measurement={measurement} is not an instance of type Measurement")
         subject_path = self.root / "primary" / subject
         if not subject_path.exists():
             raise ValueError(f"subject_path={subject_path} is not exists")
 
-        matched_patient = [p for p in self.descriptions.get("patients") if
-                           p.get("path") == subject_path.relative_to(self.root).as_posix()][0]
-        matched_patient["observations"].append(measurement.get())
+        matched_patient = [p for p in self.descriptions.get("patients", []) if
+                           p.get("name") == subject][0]
+        assert isinstance(matched_patient, dict)
+
+        if measurement.measurement_type == "ObservationMeasurement":
+            matched_patient["observations"].append(measurement.get())
 
         return self
-
-    def save(self, path=None):
-        if path:
-            save_path = Path(path) / "measurements.json"
-        else:
-            save_path = self.root / "measurements.json"
-
-        with open(save_path, "w") as json_file:
-            json.dump(self.descriptions, json_file, indent=4)
