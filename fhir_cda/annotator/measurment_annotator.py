@@ -3,7 +3,7 @@ from .abstract_annotator import AbstractAnnotator
 import pydicom
 from pydicom.uid import UID
 from fhir_cda.terms import SNOMEDCT
-from fhir_cda.ehr import ObservationMeasurement
+from fhir_cda.ehr import ObservationMeasurement, DocumentReferenceMeasurement
 import json
 from concurrent.futures import ThreadPoolExecutor
 import os
@@ -128,7 +128,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         if isinstance(subjects, list) and isinstance(measurement, list):
             for s in subjects:
                 self.add_measurements_by_subject(s, measurement)
-        elif isinstance(subjects, list) and isinstance(measurement, ObservationMeasurement):
+        elif isinstance(subjects, list) and (isinstance(measurement, ObservationMeasurement) or isinstance(measurement,
+                                                                                                           DocumentReferenceMeasurement)):
             m = measurement
             for s in subjects:
                 self.add_measurement_by_subject(s, m)
@@ -136,7 +137,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             s = subjects
             for m in measurement:
                 self.add_measurement_by_subject(s, m)
-        elif isinstance(subjects, str) and isinstance(measurement, ObservationMeasurement):
+        elif isinstance(subjects, str) and (isinstance(measurement, ObservationMeasurement) or isinstance(measurement,
+                                                                                                          DocumentReferenceMeasurement)):
             s = subjects
             m = measurement
             self.add_measurement_by_subject(s, m)
@@ -152,7 +154,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
     def add_measurement_by_subject(self, subject, measurement):
         if not isinstance(subject, str):
             raise ValueError(f"subject={subject} is not an instance of type str")
-        if not isinstance(measurement, ObservationMeasurement):
+        if not (isinstance(measurement, ObservationMeasurement) or isinstance(measurement,
+                                                                              DocumentReferenceMeasurement)):
             raise ValueError(f"measurement={measurement} is not an instance of type Measurement")
         subject_path = self.root / "primary" / subject
         if not subject_path.exists():
@@ -164,5 +167,6 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
 
         if measurement.measurement_type == "ObservationMeasurement":
             matched_patient["observations"].append(measurement.get())
-
+        elif measurement.measurement_type == "DocumentReferenceMeasurement":
+            matched_patient["documentReference"].append(measurement.get())
         return self

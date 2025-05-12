@@ -1,5 +1,5 @@
 from fhir_cda import Annotator
-from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity
+from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity, DocumentReferenceMeasurement
 from typing import Union
 from pprint import pprint
 import time
@@ -24,6 +24,10 @@ class Test:
         annotator.add_measurements(["sub-001", "sub-002"], ObservationMeasurement(
             value=ObservationValue(value_quantity=Quantity(value=175, unit="cm", code="cm")), code="8302-2",
             display="Body height"))
+        m2 = DocumentReferenceMeasurement(url="https://example.org/files/mesh-breast-surface-df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
+                                          content_type="model/obj",
+                                          title="Breast Surface Mesh")
+        annotator.add_measurements(["sub-001"], [m2])
 
         # EP1
         # annotator.add_measurements("sub-002", Measurement(value=ObservationValue(value_quantity=Quantity(value=65, unit="L/min", code="UCUM")), code="76565-1",

@@ -30,3 +30,30 @@ class ObservationMeasurement:
             "display": self.display if isinstance(self.display, str) else ""
         }
         return {k: v for k, v in measurement.items() if v not in ("", None)}
+
+
+class DocumentReferenceMeasurement:
+    def __init__(self, url: str, content_type: str, title: str):
+
+        if not isinstance(url, str):
+            raise ValueError(f"url={url} is not an instance of type str")
+        elif not isinstance(content_type, str):
+            raise ValueError(f"content_type={content_type} is not an instance of type str")
+        elif not isinstance(title, str):
+            raise ValueError(f"title={title} is not an instance of type str")
+
+        self.measurement_type = "DocumentReferenceMeasurement"
+        self.url = url
+        self.content_type = content_type
+        self.title = title
+
+    def __repr__(self):
+        return (f"DocumentReferenceMeasurement(url={self.url}, content_type={self.content_type}, title={self.title})")
+
+    def get(self):
+        measurement = {
+            "url": self.url,
+            "contentType": self.content_type,
+            "title": self.title
+        }
+        return {k: v for k, v in measurement.items() if v not in ("", None)}
