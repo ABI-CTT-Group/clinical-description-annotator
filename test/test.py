@@ -1,5 +1,5 @@
 from fhir_cda import Annotator
-from fhir_cda.ehr import Measurement, ObservationValue, Quantity
+from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity
 from typing import Union
 from pprint import pprint
 import time
@@ -7,22 +7,32 @@ import time
 
 class Test:
 
-    def test_annotator(self):
+    def test_measurements_annotator(self):
         start_time = time.time()
         annotator = Annotator("./dataset/dataset-sparc").measurements()
+        # annotator = Annotator(r"C:\Users\lgao142\Desktop\Development\DigitalTWIN tools\digitalTwin-fhir-adapter\test\dataset\ep4\measurements").measurements()
 
-        #
-        m = Measurement(value=ObservationValue(value_quantity=Quantity(value=30, unit="year", code="a")),
+        # EP4
+        m = ObservationMeasurement(value=ObservationValue(value_quantity=Quantity(value=28, unit="year", code="a")),
                         code="30525-0")
         annotator.add_measurements(["sub-001"], [m]).save()
 
-        annotator.add_measurements("sub-002", Measurement(value=ObservationValue(value_string="M"), code="99502-7",
-                                                          code_system="https://loinc.org",
-                                                          display="Recorded sex or gender"))
+        m1 = ObservationMeasurement(value=ObservationValue(value_quantity=Quantity(value=33, unit="year", code="a")),
+                        code="30525-0")
+        annotator.add_measurements(["sub-002"], [m1]).save()
 
-        annotator.add_measurements(["sub-001", "sub-002"], Measurement(
+        annotator.add_measurements(["sub-001", "sub-002"], ObservationMeasurement(
             value=ObservationValue(value_quantity=Quantity(value=175, unit="cm", code="cm")), code="8302-2",
             display="Body height"))
+
+        # EP1
+        # annotator.add_measurements("sub-002", Measurement(value=ObservationValue(value_quantity=Quantity(value=65, unit="L/min", code="UCUM")), code="76565-1",
+        #                                                   code_system="https://loinc.org",
+        #                                                   display="Cardiac output by US.2D+Calculated"))
+        #
+        # annotator.add_measurements("sub-001", Measurement(value=ObservationValue(value_quantity=Quantity(value=72, unit="L/min", code="UCUM")), code="76565-1",
+        #                                                   code_system="https://loinc.org",
+        #                                                   display="Cardiac output by US.2D+Calculated"))
 
         annotator.save()
 
@@ -30,7 +40,11 @@ class Test:
         elapsed_time = end_time - start_time
         print(f"Function took {elapsed_time:.4f} seconds to complete.")
 
+    def test_workflow_annotator(self):
+        annotator = Annotator("./dataset/workflow").workflow()
+        pprint(annotator.descriptions)
 
 if __name__ == '__main__':
     test = Test()
-    test.test_annotator()
+    test.test_measurements_annotator()
+    # test.test_workflow_annotator()

@@ -2,7 +2,7 @@ from typing import Optional
 from .elements import ObservationValue
 
 
-class Measurement:
+class ObservationMeasurement:
     def __init__(self, value: ObservationValue, code: str, code_system="http://loinc.org",
                  display: Optional[str] = None):
 
@@ -13,13 +13,14 @@ class Measurement:
         elif display is not None and not isinstance(display, str):
             raise ValueError(f"display={display} is not an instance of type str")
 
+        self.measurement_type = "ObservationMeasurement"
         self.value = value
         self.code = code
         self.code_system = code_system
         self.display = display
 
     def __repr__(self):
-        return (f"Measurement(value={self.value}, code='{self.code}', value_system='{self.code_system}')")
+        return (f"ObservationMeasurement(value={self.value}, code='{self.code}', value_system='{self.code_system}')")
 
     def get(self):
         measurement = {
