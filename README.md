@@ -84,6 +84,15 @@ m2 = ObservationMeasurement(
 annotator.add_measurements(["sub-001", "sub-002"], [m1, m2])
 annotator.save()
 ```
+- Add DocumentReference measurements
+```python
+from fhir_cda.ehr import DocumentReferenceMeasurement
+m2 = DocumentReferenceMeasurement(url="https://example.org/files/mesh-breast-surface-df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
+                                          content_type="model/obj",
+                                          title="Breast Surface Mesh")
+annotator.add_measurements(["sub-001"], [m2]).save()
+```
+
 
 - Notice: The default value for `unit system` and `code system` are:
 
