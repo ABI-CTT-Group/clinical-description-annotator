@@ -88,9 +88,9 @@ annotator.save()
 ```python
 from fhir_cda.ehr import DocumentReferenceMeasurement
 m2 = DocumentReferenceMeasurement(
-        url="https://example.org/files/mesh-breast-surface-df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
-        content_type="model/obj",
-        title="Breast Surface Mesh")
+    url="https://example.org/files/df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
+    content_type="model/obj",
+    title="Breast Surface Mesh")
 annotator.add_measurements(["sub-001"], [m2]).save()
 ```
 
