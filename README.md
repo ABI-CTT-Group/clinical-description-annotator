@@ -101,3 +101,65 @@ annotator.add_measurements(["sub-001"], [m2]).save()
 unit_system = "http://unitsofmeasure.org"
 code_system = "http://loinc.org"
 ```
+
+## Design Decisions
+- `ImagingStudy Instances` are not include at this stage, because but can be added it if required. 
+
+## Contributors
+
+<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 20px">
+    <div style="flex: 1; min-width: 300px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://github.com/LinkunGao">
+                <img src="https://avatars.githubusercontent.com/LinkunGao" width="50" height="50" style="border-radius: 50%" alt="LinkunGao"/>
+            </a>
+            <span style="margin-left: 10px;">Linkun Gao</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://github.com/chinchien-lin">
+                <img src="https://avatars.githubusercontent.com/chinchien-lin" width="50" height="50" style="border-radius: 50%" alt="chinchien-lin"/>
+            </a>
+            <span style="margin-left: 10px;">Chinchien Lin</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://profiles.auckland.ac.nz/g-sands">
+                <img src="https://profiles.auckland.ac.nz/g-sands/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Gregory Sands"/>
+            </a>
+            <span style="margin-left: 10px;">Gregory Sands</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://profiles.auckland.ac.nz/tp-babarendagamage">
+                <img src="https://profiles.auckland.ac.nz/tp-babarendagamage/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Prasad"/>
+            </a>
+            <span style="margin-left: 10px;">Thiranja Prasad Babarenda Gamage</span>
+        </div>
+    </div>
+    <div style="flex: 1; min-width: 300px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://profiles.auckland.ac.nz/a-elsayed">
+                <img src="https://profiles.auckland.ac.nz/a-elsayed/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Ayah Elsayed"/>
+            </a>
+            <span style="margin-left: 10px;">Ayah Elsayed</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://profiles.auckland.ac.nz/jiali-xu">
+                <img src="https://profiles.auckland.ac.nz/jiali-xu/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Jiali Xu"/>
+            </a>
+            <span style="margin-left: 10px;">Jiali Xu</span>
+        </div>
+        <div style="display: flex; align-items: center; margin-bottom: 15px">
+            <a href="https://profiles.auckland.ac.nz/d-nickerson">
+                <img src="https://profiles.auckland.ac.nz/d-nickerson/thumbnail" width="50" height="50" style="border-radius: 50%" alt="David Nickerson"/>
+            </a>
+            <span style="margin-left: 10px;">David Nickerson</span>
+        </div>
+    </div>
+</div>
+
+## Publications
+
+1. **[Paper Title One](https://doi.org/...)**, Author1, Author2. *Journal Name*, Year.
+2. **[Paper Title Two](https://arxiv.org/abs/...)**, Author1, Author2. *Conference Name*, Year.
+
+Please cite the corresponding paper if you use this project in your research.
+
