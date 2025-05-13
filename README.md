@@ -107,47 +107,47 @@ code_system = "http://loinc.org"
 
 ## Contributors
 
-<div style="display: flex; flex-direction: row; flex-wrap: wrap; gap: 20px">
-    <div style="flex: 1; min-width: 300px">
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin: -10px;">
+    <div style="width: 48%; min-width: 260px; padding: 10px;">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://github.com/LinkunGao">
                 <img src="https://avatars.githubusercontent.com/LinkunGao" width="50" height="50" style="border-radius: 50%" alt="LinkunGao"/>
             </a>
             <span style="margin-left: 10px;">Linkun Gao</span>
         </div>
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://github.com/chinchien-lin">
                 <img src="https://avatars.githubusercontent.com/chinchien-lin" width="50" height="50" style="border-radius: 50%" alt="chinchien-lin"/>
             </a>
             <span style="margin-left: 10px;">Chinchien Lin</span>
         </div>
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://profiles.auckland.ac.nz/g-sands">
                 <img src="https://profiles.auckland.ac.nz/g-sands/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Gregory Sands"/>
             </a>
             <span style="margin-left: 10px;">Gregory Sands</span>
         </div>
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://profiles.auckland.ac.nz/tp-babarendagamage">
                 <img src="https://profiles.auckland.ac.nz/tp-babarendagamage/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Prasad"/>
             </a>
             <span style="margin-left: 10px;">Thiranja Prasad Babarenda Gamage</span>
         </div>
     </div>
-    <div style="flex: 1; min-width: 300px">
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+    <div style="width: 48%; min-width: 260px; padding: 10px;">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://profiles.auckland.ac.nz/a-elsayed">
                 <img src="https://profiles.auckland.ac.nz/a-elsayed/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Ayah Elsayed"/>
             </a>
             <span style="margin-left: 10px;">Ayah Elsayed</span>
         </div>
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://profiles.auckland.ac.nz/jiali-xu">
                 <img src="https://profiles.auckland.ac.nz/jiali-xu/thumbnail" width="50" height="50" style="border-radius: 50%" alt="Jiali Xu"/>
             </a>
             <span style="margin-left: 10px;">Jiali Xu</span>
         </div>
-        <div style="display: flex; align-items: center; margin-bottom: 15px">
+        <div style="display: flex; align-items: center; margin-bottom: 15px;">
             <a href="https://profiles.auckland.ac.nz/d-nickerson">
                 <img src="https://profiles.auckland.ac.nz/d-nickerson/thumbnail" width="50" height="50" style="border-radius: 50%" alt="David Nickerson"/>
             </a>
