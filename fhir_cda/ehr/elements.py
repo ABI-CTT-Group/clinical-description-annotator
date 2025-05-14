@@ -1,4 +1,4 @@
-from typing import Optional, Literal, List
+from typing import Optional, Literal, List, Union
 
 
 class Quantity:
@@ -170,6 +170,81 @@ class ObservationValue:
             "valuePeriod": self.value_period.get() if isinstance(self.value_period, Period) else None
         }
         return {k: v for k, v in value.items() if v not in ("", None)}
+
+
+class ImagingStudySeriesInstance:
+    def __init__(self, uid: Optional[str] = None, sop_class_uid: Optional[str] = None,
+                 sop_class_name: Optional[str] = None, number: Optional[Union[int, str]] = None):
+        self.uid = uid
+        self.sop_class_uid = sop_class_uid
+        self.sop_class_name = sop_class_name
+        self.number = number
+
+    def set(self, item: dict):
+        self.uid = item.get("uid", None)
+        self.sop_class_uid = item.get("sopClassUid", None)
+        self.sop_class_name = item.get("sopClassName", None)
+        self.number = item.get("number", None)
+
+    def get(self):
+        instance = {
+            "uid": self.uid if isinstance(self.uid, str) else None,
+            "sopClassUid": self.sop_class_uid if isinstance(self.sop_class_uid, str) else None,
+            "sopClassName": self.sop_class_name if isinstance(self.sop_class_name, str) else None,
+            "number": self.number if isinstance(self.number, int) or isinstance(self.number, str) else None
+        }
+        return instance
+
+
+class ImagingStudySeries:
+    def __init__(self, uid: Optional[str] = None, endpoint_url: Optional[str] = None, name: Optional[str] = None,
+                 number_of_instances: Optional[int] = None, body_site: Optional[dict] = None,
+                 instances: Optional[List[ImagingStudySeriesInstance]] = None):
+        self.uid = uid
+        self.endpoint_url = endpoint_url
+        self.name = name
+        self.number_of_instances = number_of_instances
+        self.body_site = body_site
+        self.instances = instances
+
+    def set(self, item: dict):
+        self.uid = item.get("uid", None)
+        self.endpoint_url = item.get("endpointUrl", None)
+        self.name = item.get("name", None)
+        self.number_of_instances = item.get("numberOfInstances", None)
+        self.body_site = item.get("bodySite", None)
+        if item.get("instances", None) is not None:
+            self.instances = [ImagingStudySeriesInstance().set(i) for i in item.get("instances")] if isinstance(
+                item.get("instances"), list) else []
+        else:
+            self.instances = []
+
+    def set_uid(self, uid: str):
+        self.uid = uid
+
+    def set_endpoint_url(self, endpoint_url: str):
+        self.endpoint_url = endpoint_url
+
+    def set_name(self, name: str):
+        self.name = name
+
+    def set_number_of_instances(self, number_of_instances: int):
+        self.number_of_instances = number_of_instances
+
+    def set_body_site(self, body_site: dict):
+        self.body_site = body_site
+
+    def get(self):
+        series = {
+            "uid": self.uid if isinstance(self.uid, str) else "",
+            "endpointUrl": self.endpoint_url if isinstance(self.endpoint_url, str) else "",
+            "name": self.name if isinstance(self.name, str) else "",
+            "numberOfInstances": self.number_of_instances if isinstance(self.number_of_instances, int) else None,
+            "bodySite": self.body_site if isinstance(self.body_site, dict) else None,
+            "instances": [i.get() for i in self.instances if isinstance(i, ImagingStudySeriesInstance)] if isinstance(
+                self.instances, list) else []
+        }
+        return series
 
 
 class WorkflowGoal:
