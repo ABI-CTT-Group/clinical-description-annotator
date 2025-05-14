@@ -94,6 +94,28 @@ m2 = DocumentReferenceMeasurement(
 annotator.add_measurements(["sub-001"], [m2]).save()
 ```
 
+- Automated generating ImagingStudy Measurement for all patients by scan dataset 
+```python
+annotator.automated_generating_imaging_study_measurement_by_scan_dataset()
+```
+
+- Add ImagingStudy measurements manually
+    - Note: If we add it manually, we'll need to add the ImagingStudy measurement for each patient one by one. Alternatively, we can use a loop to automate the process.
+```python
+from fhir_cda.ehr import ImagingStudyMeasurement
+from fhir_cda.utils import check_first_file_extension
+from pathlib import Path
+
+p1 = Path("./dataset/dataset-sparc/primary/sub-001")
+p1_sams = [x for x in p1.iterdir() if x.is_dir()]
+p1_dcm_sams = [sam for sam in p1_sams if check_first_file_extension(sam) == "dcm"]
+m4 = ImagingStudyMeasurement(uuid="",
+                             sample_paths=p1_dcm_sams,
+                             endpoint_url="",
+                             description="dcm")
+annotator.add_measurements(["sub-001"], [m4])
+```
+
 
 - Notice: The default value for `unit system` and `code system` are:
 

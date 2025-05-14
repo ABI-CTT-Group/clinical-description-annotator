@@ -1,13 +1,11 @@
 from abc import ABC
 from .abstract_annotator import AbstractAnnotator
-import pydicom
-from pydicom.uid import UID
-from fhir_cda.terms import SNOMEDCT
-from fhir_cda.ehr import ObservationMeasurement, DocumentReferenceMeasurement
+
+from fhir_cda.ehr import ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement
 import json
-from concurrent.futures import ThreadPoolExecutor
-import os
+
 from ..utils import check_first_file_extension
+from pathlib import Path
 
 
 class MeasurementAnnotator(AbstractAnnotator, ABC):
@@ -19,6 +17,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         :param mode: string, "default" or "update"
         """
         super().__init__(dataset_path, "measurements")
+        self._patient_paths = []
         if mode == "update":
             self._read_measurements()
         else:
@@ -43,18 +42,24 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             "name": self.root.name,
         }
         self.descriptions["patients"] = []
-        patients_dir = [x for x in primary_folder.iterdir() if x.is_dir()]
-        for p in patients_dir:
+        self._patient_paths = [x for x in primary_folder.iterdir() if x.is_dir()]
+        for p in self._patient_paths:
             patient = {
                 "uuid": "",
                 "name": p.name,
                 "observations": [],
-                "imagingStudy": self._analysis_imaging_study_samples(p),
+                "imagingStudy": [],
                 "documentReference": [],
             }
             self.descriptions["patients"].append(patient)
 
-    def _analysis_imaging_study_samples(self, study):
+    def automated_generating_imaging_study_measurement_by_scan_dataset(self):
+        print(self._patient_paths)
+        for path, patient in zip(self._patient_paths, self.descriptions["patients"]):
+            patient["imagingStudy"] = self._analysis_imaging_study_samples(path)
+
+    @staticmethod
+    def _analysis_imaging_study_samples(study):
         imaging_studies = []
         if study.exists():
             sams = [x for x in study.iterdir() if x.is_dir()]
@@ -64,101 +69,14 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
                 dcm_sams = [sam for sam in sams if check_first_file_extension(sam) == "dcm"]
                 nrrd_sams = [sam for sam in sams if check_first_file_extension(sam) == "nrrd"]
             if len(dcm_sams) > 0:
-                imaging_study = self._generate_imaging_study(dcm_sams, "dcm")
-                if len(imaging_study["series"]) > 0:
-                    imaging_studies.append(imaging_study)
+                imaging_study = ImagingStudyMeasurement(sample_paths=dcm_sams, description="dcm")
+                if len(imaging_study.series) > 0:
+                    imaging_studies.append(imaging_study.get())
             if len(nrrd_sams) > 0:
-                imaging_study = self._generate_imaging_study(nrrd_sams, "nrrd")
-                if len(imaging_study["series"]) > 0:
-                    imaging_studies.append(imaging_study)
+                imaging_study = ImagingStudyMeasurement(sample_paths=nrrd_sams, description="nrrd")
+                if len(imaging_study.series) > 0:
+                    imaging_studies.append(imaging_study.get())
         return imaging_studies
-
-    def _generate_imaging_study(self, sams, description):
-        imaging_study = {
-            "endpointUrl": "",
-            "description": description,
-            "series": []
-        }
-        if len(self.descriptions["patients"]) < 5:
-            for sam in sams:
-                s = self._read_sam(sam)
-                if s is not None:
-                    imaging_study["series"].append(s)
-        else:
-            imaging_study["series"] = self._analysis_dicom_samples_worker(sams)
-
-        return imaging_study
-
-    def _read_sam(self, sam):
-        try:
-            dcm_files = list(sam.glob("*.dcm"))
-            nrrd_files = list(sam.glob("*.nrrd"))
-            if len(dcm_files) < 1 and len(nrrd_files) < 1:
-                return
-            if len(dcm_files) > 0 and len(nrrd_files) > 0:
-                raise ValueError("dataset format error: Detected dcm and nrrd files under the same sample folder.")
-
-            if len(dcm_files) >= 1:
-                s_dicom_file = pydicom.dcmread(dcm_files[0])
-                body_part_examined = s_dicom_file.get((0x0018, 0x0015), None)
-                body_site = SNOMEDCT.get(body_part_examined.value.upper(),
-                                         None) if body_part_examined is not None else None
-
-                suid = s_dicom_file.get((0x0020, 0x000e), None)
-                s = {
-                    "endpointUrl": "",
-                    "uid": suid.value if suid is not None else "",
-                    "name": sam.name,
-                    "numberOfInstances": len(dcm_files),
-                    "bodySite": body_site,
-                    "instances": self._analysis_dicom_sample_instances(dcm_files)
-                }
-                return s
-            if len(nrrd_files) >= 1:
-                s = {
-                    "endpointUrl": "",
-                    "uid": None,
-                    "name": sam.name,
-                    "numberOfInstances": len(nrrd_files),
-                    "instances": []
-                }
-                return s
-        except Exception as e:
-            print(f"Error reading {sam}: {e}")
-            return None
-
-    def _analysis_dicom_samples_worker(self, sams):
-        samples = []
-        max_workers = os.cpu_count()
-        with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            results = executor.map(self._read_sam, sams)
-
-        for result in results:
-            if result is not None:
-                samples.append(result)
-
-        return samples
-
-    @staticmethod
-    def _analysis_dicom_sample_instances(dcms):
-        instances = []
-        # TODO: 14/05/2025 decision: not consider the instance level at this stage
-        # for d in dcms:
-        #     dcm = pydicom.dcmread(d)
-        #
-        #     # Get the SOP Class UID
-        #     sop_class_uid = dcm.SOPClassUID
-        #     # Get the SOP Class Name using the UID dictionary
-        #     sop_class_name = UID(sop_class_uid).name
-        #
-        #     instance = {
-        #         "uid": dcm[(0x0008, 0x0018)].value,
-        #         "sopClassUid": sop_class_uid,
-        #         "sopClassName": sop_class_name,
-        #         "number": dcm[(0x0020, 0x0013)].value
-        #     }
-        #     instances.append(instance)
-        return instances
 
     def add_measurements(self, subjects, measurements):
         self.add_measurement(subjects, measurements)
@@ -168,8 +86,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         if isinstance(subjects, list) and isinstance(measurement, list):
             for s in subjects:
                 self.add_measurements_by_subject(s, measurement)
-        elif isinstance(subjects, list) and (isinstance(measurement, ObservationMeasurement) or isinstance(measurement,
-                                                                                                           DocumentReferenceMeasurement)):
+        elif isinstance(subjects, list) and isinstance(measurement, (ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
             m = measurement
             for s in subjects:
                 self.add_measurement_by_subject(s, m)
@@ -177,8 +94,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             s = subjects
             for m in measurement:
                 self.add_measurement_by_subject(s, m)
-        elif isinstance(subjects, str) and (isinstance(measurement, ObservationMeasurement) or isinstance(measurement,
-                                                                                                          DocumentReferenceMeasurement)):
+        elif isinstance(subjects, str) and isinstance(measurement, (ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
             s = subjects
             m = measurement
             self.add_measurement_by_subject(s, m)
@@ -194,8 +110,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
     def add_measurement_by_subject(self, subject, measurement):
         if not isinstance(subject, str):
             raise ValueError(f"subject={subject} is not an instance of type str")
-        if not (isinstance(measurement, ObservationMeasurement) or isinstance(measurement,
-                                                                              DocumentReferenceMeasurement)):
+        if not isinstance(measurement, (ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
             raise ValueError(f"measurement={measurement} is not an instance of type Measurement")
         subject_path = self.root / "primary" / subject
         if not subject_path.exists():
@@ -208,6 +123,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             matched_patient["observations"].append(measurement.get())
         elif measurement.measurement_type == "DocumentReferenceMeasurement":
             matched_patient["documentReference"].append(measurement.get())
+        elif measurement.measurement_type == "ImagingStudyMeasurement":
+            matched_patient["imagingStudy"].append(measurement.get())
         return self
 
     def update_imaging_study_measurement_series_description(self, subject: str, imaging_study_order: int,

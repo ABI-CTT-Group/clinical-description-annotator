@@ -1,5 +1,10 @@
 from typing import Optional
-from .elements import ObservationValue
+from .elements import ObservationValue, ImagingStudySeries, ImagingStudySeriesInstance
+import pydicom
+from pydicom.uid import UID
+from fhir_cda.terms import SNOMEDCT
+from concurrent.futures import ThreadPoolExecutor
+import os
 
 
 class ObservationMeasurement:
@@ -60,8 +65,8 @@ class DocumentReferenceMeasurement:
 
 
 class ImagingStudyMeasurement:
-    def __init__(self, sample_paths: list, uuid: str = None, endpoint_url: str = None, description: str = None):
-        if not isinstance(sample_paths, list):
+    def __init__(self, uuid: str = "", sample_paths: list = None, endpoint_url: str = "", description: str = ""):
+        if sample_paths is not None and not isinstance(sample_paths, list):
             raise ValueError(f"samples={sample_paths} is not an instance of type list")
         if not isinstance(uuid, str):
             raise ValueError(f"uuid={uuid} is not an instance of type str")
@@ -70,9 +75,127 @@ class ImagingStudyMeasurement:
         if endpoint_url is not None and not isinstance(endpoint_url, str):
             raise ValueError(f"endpoint_url={endpoint_url} is not an instance of type str")
 
-        self._samples = sample_paths
         self.measurement_type = "ImagingStudyMeasurement"
         self.uuid = uuid
         self.endpoint_url = endpoint_url
         self.description = description
         self.series = []
+
+        if sample_paths is not None:
+            if len(sample_paths) == 0:
+                raise ValueError(f"sample_paths={sample_paths} should have at least one instance.")
+            self._samples = sample_paths
+            self._generate_imaging_study()
+
+    def set(self, item):
+        self.uuid = item.get("uuid", "")
+        self.endpoint_url = item.get("endpoint_url", "")
+        self.description = item.get("description", "")
+        if item.get("series", None) is not None:
+            self.series = [ImagingStudySeries().set(s) for s in item.get("series")] if isinstance(item.get("series"),
+                                                                                                  list) else []
+        else:
+            self.series = []
+
+    def set_uuid(self, uuid):
+        self.uuid = uuid
+
+    def set_endpoint_url(self, endpoint_url):
+        self.endpoint_url = endpoint_url
+
+    def set_description(self, description):
+        self.description = description
+
+    def get(self):
+        imaging_study_measurement = {
+            "uuid": self.uuid if isinstance(self.uuid, str) else "",
+            "endpointUrl": self.endpoint_url if isinstance(self.endpoint_url, str) else "",
+            "description": self.description if isinstance(self.description, str) else "",
+            "series": [s.get() for s in self.series if isinstance(s, ImagingStudySeries)] if isinstance(self.series,
+                                                                                                        list) else [],
+        }
+        return imaging_study_measurement
+
+    def _generate_imaging_study(self):
+        primary_folder = self._samples[0].parent.parent
+        patients_dirs = [x for x in primary_folder.iterdir() if x.is_dir()]
+
+        if len(patients_dirs) < 5:
+            for sam in self._samples:
+                s = self._read_sam(sam)
+                if s is not None:
+                    self.series.append(s)
+        else:
+            self.series.extend(self._analysis_dicom_samples_worker(self._samples))
+
+    def _read_sam(self, sam):
+        try:
+            dcm_files = list(sam.glob("*.dcm"))
+            nrrd_files = list(sam.glob("*.nrrd"))
+            if len(dcm_files) < 1 and len(nrrd_files) < 1:
+                return
+            if len(dcm_files) > 0 and len(nrrd_files) > 0:
+                raise ValueError("dataset format error: Detected dcm and nrrd files under the same sample folder.")
+
+            if len(dcm_files) >= 1:
+                s_dicom_file = pydicom.dcmread(dcm_files[0])
+                body_part_examined = s_dicom_file.get((0x0018, 0x0015), None)
+                body_site = SNOMEDCT.get(body_part_examined.value.upper(),
+                                         None) if body_part_examined is not None else None
+
+                suid = s_dicom_file.get((0x0020, 0x000e), None)
+                s = ImagingStudySeries(uid=suid.value if suid is not None else "",
+                                       endpoint_url="",
+                                       name=sam.name,
+                                       number_of_instances=len(dcm_files),
+                                       body_site=body_site,
+                                       instances=self._analysis_dicom_sample_instances(dcm_files)
+                                       )
+                return s
+            if len(nrrd_files) >= 1:
+                s = ImagingStudySeries(uid=None,
+                                       endpoint_url="",
+                                       name=sam.name,
+                                       number_of_instances=len(nrrd_files),
+                                       instances=[]
+                                       )
+                return s
+        except Exception as e:
+            print(f"Error reading {sam}: {e}")
+            return None
+
+    def _analysis_dicom_samples_worker(self, sams):
+        samples = []
+        max_workers = os.cpu_count()
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            results = executor.map(self._read_sam, sams)
+
+        for result in results:
+            if result is not None:
+                samples.append(result)
+
+        return samples
+
+    @staticmethod
+    def _analysis_dicom_sample_instances(dcms):
+        instances = []
+        # TODO: 14/05/2025 decision: not consider the instance level at this stage
+        # for d in dcms:
+        #     dcm = pydicom.dcmread(d)
+        #
+        #     # Get the SOP Class UID
+        #     sop_class_uid = dcm.SOPClassUID
+        #     # Get the SOP Class Name using the UID dictionary
+        #     sop_class_name = UID(sop_class_uid).name
+        #
+        #     instance = ImagingStudySeriesInstance(uid=dcm[(0x0008, 0x0018)].value, sop_class_uid=sop_class_uid,
+        #                                           sop_class_name=sop_class_name, number=dcm[(0x0020, 0x0013)].value)
+        #
+        #     # instance = {
+        #     #     "uid": dcm[(0x0008, 0x0018)].value,
+        #     #     "sopClassUid": sop_class_uid,
+        #     #     "sopClassName": sop_class_name,
+        #     #     "number": dcm[(0x0020, 0x0013)].value
+        #     # }
+        #    instances.append(instance)
+        return instances
