@@ -1,5 +1,6 @@
 import yaml
 from collections import OrderedDict
+from pathlib import Path
 
 
 def is_observation_type(variable):
@@ -28,3 +29,21 @@ def ordered_load(stream, Loader=yaml.SafeLoader, object_pairs_hook=OrderedDict):
         yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG,
         construct_mapping)
     return yaml.load(stream, OrderedLoader)
+
+
+def check_first_file_extension(folder_path):
+    folder = Path(folder_path)
+    files = sorted([f for f in folder.iterdir() if f.is_file()])
+
+    if not files:
+        return None
+
+    first_file = files[0]
+    ext = first_file.suffix.lower()
+
+    if ext == '.dcm':
+        return 'dcm'
+    elif ext == '.nrrd':
+        return 'nrrd'
+    else:
+        return 'unknown'

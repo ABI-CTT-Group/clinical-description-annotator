@@ -57,3 +57,22 @@ class DocumentReferenceMeasurement:
             "title": self.title
         }
         return {k: v for k, v in measurement.items() if v not in ("", None)}
+
+
+class ImagingStudyMeasurement:
+    def __init__(self, sample_paths: list, uuid: str = None, endpoint_url: str = None, description: str = None):
+        if not isinstance(sample_paths, list):
+            raise ValueError(f"samples={sample_paths} is not an instance of type list")
+        if not isinstance(uuid, str):
+            raise ValueError(f"uuid={uuid} is not an instance of type str")
+        if description is not None and not isinstance(description, str):
+            raise ValueError(f"description={description} is not an instance of type str")
+        if endpoint_url is not None and not isinstance(endpoint_url, str):
+            raise ValueError(f"endpoint_url={endpoint_url} is not an instance of type str")
+
+        self._samples = sample_paths
+        self.measurement_type = "ImagingStudyMeasurement"
+        self.uuid = uuid
+        self.endpoint_url = endpoint_url
+        self.description = description
+        self.series = []
