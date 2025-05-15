@@ -26,7 +26,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
     def _read_measurements(self):
         measurements_path = self.root / "measurements.json"
         if not measurements_path.exists():
-            raise ValueError("Measurements file does not exist")
+            raise ValueError("Measurements json file does not exist!")
         else:
             with open(measurements_path, "r") as f:
                 self.descriptions = json.load(f)
@@ -54,7 +54,6 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             self.descriptions["patients"].append(patient)
 
     def automated_generating_imaging_study_measurement_by_scan_dataset(self):
-        print(self._patient_paths)
         for path, patient in zip(self._patient_paths, self.descriptions["patients"]):
             patient["imagingStudy"] = self._analysis_imaging_study_samples(path)
 
@@ -126,6 +125,12 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         elif measurement.measurement_type == "ImagingStudyMeasurement":
             matched_patient["imagingStudy"].append(measurement.get())
         return self
+
+    def update_dataset(self, field, value):
+        if field not in self.descriptions.get("dataset"):
+            raise ValueError(f"field {field} is not in descriptions['dataset']")
+        else:
+            self.descriptions["dataset"][field] = value
 
     def update_imaging_study_measurement_series_description(self, subject: str, imaging_study_order: int,
                                                             series_description: dict):
