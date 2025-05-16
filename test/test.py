@@ -70,7 +70,8 @@ class Test:
         })
         annotator.update_dataset("uuid", "aaxaaa")
         annotator.save()
-        pprint(annotator.descriptions)
+        # pprint(annotator.descriptions)
+        pprint(annotator.elements)
 
     def test_workflow_annotator(self):
         annotator = Annotator("./dataset/workflow").workflow()
@@ -80,5 +81,5 @@ class Test:
 if __name__ == '__main__':
     test = Test()
     test.test_measurements_annotator()
-    # test.test_measurements_annotator_update_mode()
+    test.test_measurements_annotator_update_mode()
     # test.test_workflow_annotator()

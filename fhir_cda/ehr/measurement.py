@@ -8,10 +8,11 @@ import os
 
 
 class ObservationMeasurement:
-    def __init__(self, value: ObservationValue, code: str, code_system="http://loinc.org",
+    def __init__(self, value: Optional[ObservationValue] = None, code: Optional[str] = "",
+                 code_system="http://loinc.org",
                  display: Optional[str] = None, uuid: Optional[str] = ""):
 
-        if not isinstance(value, ObservationValue):
+        if value is not None and not isinstance(value, ObservationValue):
             raise ValueError(f"value={value} is not an ObservationValue type")
         elif not isinstance(code, str):
             raise ValueError(f"code={code} is not an instance of type str")
@@ -36,6 +37,7 @@ class ObservationMeasurement:
         self.code = item.get("code", "")
         self.display = item.get("display", "")
         self.code_system = item.get("code_system", "")
+        return self
 
     def get(self):
         measurement = {
@@ -49,7 +51,8 @@ class ObservationMeasurement:
 
 
 class DocumentReferenceMeasurement:
-    def __init__(self, url: str, content_type: str, title: str, uuid: Optional[str] = ""):
+    def __init__(self, url: Optional[str] = "", content_type: Optional[str] = "", title: Optional[str] = "",
+                 uuid: Optional[str] = ""):
 
         if not isinstance(url, str):
             raise ValueError(f"url={url} is not an instance of type str")
@@ -75,6 +78,7 @@ class DocumentReferenceMeasurement:
         self.url = item.get("url", "")
         self.content_type = item.get("content_type", "")
         self.title = item.get("title", "")
+        return self
 
     def get(self):
         measurement = {
@@ -124,6 +128,8 @@ class ImagingStudyMeasurement:
                                                                                                   list) else []
         else:
             self.series = []
+
+        return self
 
     def set_uuid(self, uuid):
         self.uuid = uuid
