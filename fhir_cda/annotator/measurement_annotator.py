@@ -18,6 +18,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         """
         super().__init__(dataset_path, "measurements")
         self._patient_paths = []
+        self.elements = {}
         if mode == "update":
             self._read_measurements()
         else:
@@ -30,6 +31,10 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         else:
             with open(measurements_path, "r") as f:
                 self.descriptions = json.load(f)
+
+    def _convert_descriptions_to_elements(self, description):
+        self.elements["dataset"] = self.descriptions["dataset"]
+        self.elements["patient"] = self.descriptions["patient"]
 
     def _analysis_dataset(self):
         primary_folder = self.root / "primary"
@@ -131,6 +136,11 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             raise ValueError(f"field {field} is not in descriptions['dataset']")
         else:
             self.descriptions["dataset"][field] = value
+
+    def update_patient(self, field, value):
+        if field not in self.descriptions.get("patient"):
+            raise ValueError(f"field {field} is not in descriptions['patient']")
+
 
     def update_imaging_study_measurement_series_description(self, subject: str, imaging_study_order: int,
                                                             series_description: dict):

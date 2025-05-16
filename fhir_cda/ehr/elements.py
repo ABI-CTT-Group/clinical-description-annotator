@@ -153,6 +153,70 @@ class ObservationValue:
         self.value_date_time = value_date_time
         self.value_period = value_period
 
+    def set(self, item):
+        keys = list(item.keys())
+        if "valueQuantity" in keys:
+            quantity = item["valueQuantity"]
+            self.value_quantity = Quantity(value=quantity.get("value", None),
+                                           unit=quantity.get("unit", None),
+                                           code=quantity.get("code", None),
+                                           comparator=quantity.get("comparator", None),
+                                           system=quantity.get("system", None))
+        elif "valueCodeableConcept" in keys:
+            codeableconcept = item["valueCodeableConcept"]
+            self.value_codeable_concept = CodeableConcept(text=codeableconcept.get("text", None),
+                                                          codings=[Coding(system=c.get("system", None),
+                                                                          version=c.get("version", None),
+                                                                          display=c.get("display", None),
+                                                                          code=c.get("code", None),
+                                                                          user_selected=c.get("userSelected", None)) for
+                                                                   c in codeableconcept.get("codings", [])])
+        elif "valueString" in keys:
+            self.value_string = item["valueString"]
+
+        elif "valueBoolean" in keys:
+            self.value_boolean = item["valueBoolean"]
+        elif "valueInteger" in keys:
+            self.value_integer = item["valueInteger"]
+        elif "valueTime" in keys:
+            self.value_time = item["valueTime"]
+        elif "valueDateTime" in keys:
+            self.value_date_time = item["valueDateTime"]
+        elif "valueRange" in keys:
+            value_range = item["valueRange"]
+            self.value_range = Range(low=value_range.get("low", None),
+                                     high=value_range.get("high", None))
+        elif "valueRatio" in keys:
+            value_ratio = item["valueRatio"]
+            numerator = value_ratio.get("numerator", None)
+            denominator = value_ratio.get("denominator", None)
+            self.value_ratio = Ratio(numerator=Quantity(value=numerator.get("value", None),
+                                                        unit=numerator.get("unit", None),
+                                                        code=numerator.get("code", None),
+                                                        comparator=numerator.get("comparator", None),
+                                                        system=numerator.get("system", None)) if numerator else None,
+                                     denominator=Quantity(value=denominator.get("value", None),
+                                                          unit=denominator.get("unit", None),
+                                                          code=denominator.get("code", None),
+                                                          comparator=denominator.get("comparator", None),
+                                                          system=denominator.get("system",
+                                                                                 None)) if denominator else None)
+        elif "valueSampledData" in keys:
+            value_sampled_data = item["valueSampledData"]
+            self.value_sampled_data = SampledData(origin=value_sampled_data.get("origin", None),
+                                                  period=value_sampled_data.get("period", None),
+                                                  dimensions=value_sampled_data.get("dimensions", None),
+                                                  factor=value_sampled_data.get("factor", None),
+                                                  lower_limit=value_sampled_data.get("lower_limit", None),
+                                                  upper_limit=value_sampled_data.get("upper_limit", None),
+                                                  data=value_sampled_data.get("data", None))
+        elif "valuePeriod" in keys:
+            value_period = item["valuePeriod"]
+            self.value_period = Period(start=value_period.get("start", None),
+                                       end=value_period.get("end", None))
+        else:
+            raise ValueError(f"{item} is not a valid ObservationValue type.")
+
     def get(self):
         value = {
             "valueQuantity": self.value_quantity.get() if isinstance(self.value_quantity, Quantity) else None,

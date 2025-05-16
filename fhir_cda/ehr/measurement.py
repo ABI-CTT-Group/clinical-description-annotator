@@ -31,6 +31,12 @@ class ObservationMeasurement:
         return (
             f"ObservationMeasurement(uuid={self.uuid},value={self.value}, code='{self.code}', value_system='{self.code_system}')")
 
+    def set(self, item):
+        self.uuid = item.get("uuid", "")
+        self.code = item.get("code", "")
+        self.display = item.get("display", "")
+        self.code_system = item.get("code_system", "")
+
     def get(self):
         measurement = {
             "uuid": self.uuid,
@@ -63,6 +69,12 @@ class DocumentReferenceMeasurement:
     def __repr__(self):
         return (
             f"DocumentReferenceMeasurement(uuid={self.uuid},url={self.url}, content_type={self.content_type}, title={self.title})")
+
+    def set(self, item):
+        self.uuid = item.get("uuid", "")
+        self.url = item.get("url", "")
+        self.content_type = item.get("content_type", "")
+        self.title = item.get("title", "")
 
     def get(self):
         measurement = {
