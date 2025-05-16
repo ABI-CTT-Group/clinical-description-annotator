@@ -64,12 +64,13 @@ class Test:
 
     def test_measurements_annotator_update_mode(self):
         annotator = Annotator("./dataset/dataset-sparc").measurements(mode="update")
-        pprint(annotator.descriptions)
         annotator.update_imaging_study_measurement_series_description("sub-004", 1, {
             "sam-007": "pre contrast",
             "sam-008": "contrast 1"
         })
+        annotator.update_dataset("uuid", "aaxaaa")
         annotator.save()
+        pprint(annotator.descriptions)
 
     def test_workflow_annotator(self):
         annotator = Annotator("./dataset/workflow").workflow()
