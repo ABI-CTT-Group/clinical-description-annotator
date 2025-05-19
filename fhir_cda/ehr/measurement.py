@@ -39,6 +39,10 @@ class ObservationMeasurement:
         self.code_system = item.get("code_system", "")
         return self
 
+    def set_uuid(self, uuid):
+        self.uuid = uuid
+        return self
+
     def get(self):
         measurement = {
             "uuid": self.uuid,
@@ -80,6 +84,10 @@ class DocumentReferenceMeasurement:
         self.title = item.get("title", "")
         return self
 
+    def set_uuid(self, uuid):
+        self.uuid = uuid
+        return self
+
     def get(self):
         measurement = {
             "uuid": self.uuid,
@@ -118,6 +126,10 @@ class ImagingStudyMeasurement:
                 raise ValueError(f"sample_paths={sample_paths} should have at least one instance.")
             self._samples = sample_paths
             self._generate_imaging_study()
+
+    def __repr__(self):
+        return (
+            f"ImagingStudyMeasurement(uuid={self.uuid},endpointUrl={self.endpoint_url}, description={self.description}, series={len(self.series)})")
 
     def set(self, item):
         self.uuid = item.get("uuid", "")

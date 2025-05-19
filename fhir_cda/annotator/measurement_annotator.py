@@ -56,7 +56,12 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             "uuid": "",
             "name": self.root.name,
         }
+        self.elements["dataset"] = {
+            "uuid": "",
+            "name": self.root.name,
+        }
         self.descriptions["patients"] = []
+        self.elements["patients"] = []
         self._patient_paths = [x for x in primary_folder.iterdir() if x.is_dir()]
         for p in self._patient_paths:
             patient = {
