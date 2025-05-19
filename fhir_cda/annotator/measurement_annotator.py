@@ -31,10 +31,20 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         else:
             with open(measurements_path, "r") as f:
                 self.descriptions = json.load(f)
+                self._convert_descriptions_to_elements()
 
-    def _convert_descriptions_to_elements(self, description):
+    def _convert_descriptions_to_elements(self):
         self.elements["dataset"] = self.descriptions["dataset"]
-        self.elements["patient"] = self.descriptions["patient"]
+        self.elements["patients"] = []
+        for idx, p in enumerate(self.descriptions.get("patients", [])):
+            patient_element = {}
+            patient_element["uuid"] = p.get("uuid", "")
+            patient_element["name"] = p.get("name", "")
+            patient_element["observations"] = [ObservationMeasurement().set(o) for o in p.get("observations", [])]
+            patient_element["imagingStudy"] = [ImagingStudyMeasurement().set(i) for i in p.get("imagingStudy", [])]
+            patient_element["documentReference"] = [DocumentReferenceMeasurement().set(d) for d in
+                                                    p.get("documentReference", [])]
+            self.elements["patients"].append(patient_element)
 
     def _analysis_dataset(self):
         primary_folder = self.root / "primary"
@@ -46,7 +56,12 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             "uuid": "",
             "name": self.root.name,
         }
+        self.elements["dataset"] = {
+            "uuid": "",
+            "name": self.root.name,
+        }
         self.descriptions["patients"] = []
+        self.elements["patients"] = []
         self._patient_paths = [x for x in primary_folder.iterdir() if x.is_dir()]
         for p in self._patient_paths:
             patient = {
@@ -90,7 +105,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         if isinstance(subjects, list) and isinstance(measurement, list):
             for s in subjects:
                 self.add_measurements_by_subject(s, measurement)
-        elif isinstance(subjects, list) and isinstance(measurement, (ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
+        elif isinstance(subjects, list) and isinstance(measurement, (
+                ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
             m = measurement
             for s in subjects:
                 self.add_measurement_by_subject(s, m)
@@ -98,7 +114,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             s = subjects
             for m in measurement:
                 self.add_measurement_by_subject(s, m)
-        elif isinstance(subjects, str) and isinstance(measurement, (ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
+        elif isinstance(subjects, str) and isinstance(measurement, (
+                ObservationMeasurement, DocumentReferenceMeasurement, ImagingStudyMeasurement)):
             s = subjects
             m = measurement
             self.add_measurement_by_subject(s, m)
@@ -140,7 +157,6 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
     def update_patient(self, field, value):
         if field not in self.descriptions.get("patient"):
             raise ValueError(f"field {field} is not in descriptions['patient']")
-
 
     def update_imaging_study_measurement_series_description(self, subject: str, imaging_study_order: int,
                                                             series_description: dict):
