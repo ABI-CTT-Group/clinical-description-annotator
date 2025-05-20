@@ -37,13 +37,13 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         self.elements["dataset"] = self.descriptions["dataset"]
         self.elements["patients"] = []
         for idx, p in enumerate(self.descriptions.get("patients", [])):
-            patient_element = {}
-            patient_element["uuid"] = p.get("uuid", "")
-            patient_element["name"] = p.get("name", "")
-            patient_element["observations"] = [ObservationMeasurement().set(o) for o in p.get("observations", [])]
-            patient_element["imagingStudy"] = [ImagingStudyMeasurement().set(i) for i in p.get("imagingStudy", [])]
-            patient_element["documentReference"] = [DocumentReferenceMeasurement().set(d) for d in
-                                                    p.get("documentReference", [])]
+            patient_element = {
+                "uuid": p.get("uuid", ""),
+                "name": p.get("name", ""),
+                "observations": [ObservationMeasurement().set(o) for o in p.get("observations", [])],
+                "imagingStudy": [ImagingStudyMeasurement().set(i) for i in p.get("imagingStudy", [])],
+                "documentReference": [DocumentReferenceMeasurement().set(d) for d in p.get("documentReference", [])],
+            }
             self.elements["patients"].append(patient_element)
 
     def _analysis_dataset(self):
