@@ -217,6 +217,8 @@ class ObservationValue:
         else:
             raise ValueError(f"{item} is not a valid ObservationValue type.")
 
+        return self
+
     def get(self):
         value = {
             "valueQuantity": self.value_quantity.get() if isinstance(self.value_quantity, Quantity) else None,
@@ -250,6 +252,8 @@ class ImagingStudySeriesInstance:
         self.sop_class_name = item.get("sopClassName", None)
         self.number = item.get("number", None)
 
+        return self
+
     def get(self):
         instance = {
             "uid": self.uid if isinstance(self.uid, str) else None,
@@ -261,10 +265,16 @@ class ImagingStudySeriesInstance:
 
 
 class ImagingStudySeries:
-    def __init__(self, uid: Optional[str] = None, endpoint_url: Optional[str] = None, name: Optional[str] = None,
+    """
+    endpoint_uuid: is sample's (series) uuid in digitaltwins platform or by user
+    """
+
+    def __init__(self, uid: Optional[str] = None, endpoint_uuid: Optional[str] = None,
+                 endpoint_url: Optional[str] = None, name: Optional[str] = None,
                  number_of_instances: Optional[int] = None, body_site: Optional[dict] = None,
                  instances: Optional[List[ImagingStudySeriesInstance]] = None):
         self.uid = uid
+        self.endpoint_uuid = endpoint_uuid
         self.endpoint_url = endpoint_url
         self.name = name
         self.number_of_instances = number_of_instances
@@ -273,6 +283,7 @@ class ImagingStudySeries:
 
     def set(self, item: dict):
         self.uid = item.get("uid", None)
+        self.endpoint_uuid = item.get("endpointUuid", None)
         self.endpoint_url = item.get("endpointUrl", None)
         self.name = item.get("name", None)
         self.number_of_instances = item.get("numberOfInstances", None)
@@ -283,24 +294,36 @@ class ImagingStudySeries:
         else:
             self.instances = []
 
+        return self
+
     def set_uid(self, uid: str):
         self.uid = uid
+        return self
+
+    def set_endpoint_uuid(self, endpoint_uuid: str):
+        self.endpoint_uuid = endpoint_uuid
+        return self
 
     def set_endpoint_url(self, endpoint_url: str):
         self.endpoint_url = endpoint_url
+        return self
 
     def set_name(self, name: str):
         self.name = name
+        return self
 
     def set_number_of_instances(self, number_of_instances: int):
         self.number_of_instances = number_of_instances
+        return self
 
     def set_body_site(self, body_site: dict):
         self.body_site = body_site
+        return self
 
     def get(self):
         series = {
             "uid": self.uid if isinstance(self.uid, str) else "",
+            "endpointUuid": self.endpoint_uuid if isinstance(self.endpoint_uuid, str) else "",
             "endpointUrl": self.endpoint_url if isinstance(self.endpoint_url, str) else "",
             "name": self.name if isinstance(self.name, str) else "",
             "numberOfInstances": self.number_of_instances if isinstance(self.number_of_instances, int) else None,
