@@ -199,7 +199,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             return matched_patient["observations"]
         elif category == "ImagingStudyMeasurement":
             return matched_patient["imagingStudy"]
-        elif category == "DocumentReference":
+        elif category == "DocumentReferenceMeasurement":
             return matched_patient["documentReference"]
         else:
             raise ValueError(
