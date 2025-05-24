@@ -1,6 +1,8 @@
 from fhir_cda import Annotator
+from fhir_cda.ehr.elements import ImagingStudySeries
 from fhir_cda.utils import check_first_file_extension
-from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity, DocumentReferenceMeasurement, ImagingStudyMeasurement
+from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity, DocumentReferenceMeasurement, \
+    ImagingStudyMeasurement
 from pathlib import Path
 from typing import Union
 from pprint import pprint
@@ -22,6 +24,15 @@ class Test:
         m1 = ObservationMeasurement(value=ObservationValue(value_quantity=Quantity(value=33, unit="year", code="a")),
                                     code="30525-0")
         annotator.add_measurements(["sub-002"], [m1]).save()
+
+        # Add measurements with uuid by user
+        m2 = ObservationMeasurement(
+            uuid="sparc-xxx-1111",
+            value=ObservationValue(
+                value_string="this the test value."),
+            display="test value string with uuid"
+        )
+        annotator.add_measurements("sub-001", m2).save()
 
         annotator.add_measurements(["sub-001", "sub-002"], ObservationMeasurement(
             value=ObservationValue(value_quantity=Quantity(value=175, unit="cm", code="cm")), code="8302-2",
