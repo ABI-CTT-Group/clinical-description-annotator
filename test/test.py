@@ -37,11 +37,11 @@ class Test:
         annotator.add_measurements(["sub-001", "sub-002"], ObservationMeasurement(
             value=ObservationValue(value_quantity=Quantity(value=175, unit="cm", code="cm")), code="8302-2",
             display="Body height"))
-        m2 = DocumentReferenceMeasurement(
+        m3 = DocumentReferenceMeasurement(
             url="https://example.org/files/mesh-breast-surface-df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
             content_type="model/obj",
             title="Breast Surface Mesh")
-        annotator.add_measurements(["sub-001"], [m2])
+        annotator.add_measurements(["sub-001"], [m3])
 
         # EP1
         # annotator.add_measurements("sub-002", Measurement(value=ObservationValue(value_quantity=Quantity(value=65, unit="L/min", code="UCUM")), code="76565-1",
@@ -52,9 +52,17 @@ class Test:
         #                                                   code_system="https://loinc.org",
         #                                                   display="Cardiac output by US.2D+Calculated"))
 
-
         # add ImagingStudy Measurement automatically by scan dataset
         annotator.automated_generating_imaging_study_measurement_by_scan_dataset()
+
+        # add ImagingStudy Measurement manually
+        dcm_samples = [{"uuid": "jjshgsh", "path": "./dataset/dataset-sparc/primary/sub-001/sam-001"}]
+        mi = ImagingStudyMeasurement(uuid="sparc-imaging-study-11981",
+                                     sample_details=dcm_samples,
+                                     description="test dcm for manual imaging study",
+                                     endpoint_url="https://example.org/files/imagingstudy/1"
+                                     )
+        annotator.add_measurements("sub-001", mi).save()
 
         # add ImagingStudy Measurements manually
         # p1 = Path("./dataset/dataset-sparc/primary/sub-001")
@@ -66,7 +74,6 @@ class Test:
         #                              description="dcm")
         # annotator.add_measurements(["sub-001"], [m4])
 
-
         annotator.save()
 
         end_time = time.time()
@@ -75,14 +82,42 @@ class Test:
 
     def test_measurements_annotator_update_mode(self):
         annotator = Annotator("./dataset/dataset-sparc").measurements(mode="update")
-        annotator.update_imaging_study_measurement_series_description("sub-004", 1, {
-            "sam-007": "pre contrast",
-            "sam-008": "contrast 1"
-        })
+
+        # update dataset uuid
         annotator.update_dataset("uuid", "aaxaaa")
         annotator.save()
-        # pprint(annotator.descriptions)
-        pprint(annotator.elements)
+
+        # update patient uuid
+        annotator.update_patient(subject="sub-001", field="uuid", value="sparc-patient-sub-001").save()
+
+        # update patient observation
+        observations = annotator.update_patient_measurements(subject="sub-001", category="ObservationMeasurement")
+        ob = observations[0]
+        assert isinstance(ob, ObservationMeasurement)
+        ob.set_uuid("sparc-patient-sub-001-observation-uuid-xx01")
+        annotator.save()
+
+        # update patient ImagingStudy uuid and endpoint url
+        image_studies = annotator.update_patient_measurements(subject="sub-001", category="ImagingStudyMeasurement")
+        image_study = image_studies[0]
+        assert isinstance(image_study, ImagingStudyMeasurement)
+        image_study.set_uuid("sparc-patient-sub001-image-uuid-xxx-ss01").set_endpoint_url("http://localhost:8000/fhir")
+        annotator.save()
+
+        # update patient ImagingStudy series's uuid and endpoint url
+        series = image_study.get_series()
+        s = series[0]
+        assert isinstance(s, ImagingStudySeries)
+        s.set_endpoint_uuid("sparc-patient-imagingstudy-series-01-xxx-001").set_endpoint_url(
+            "http://localhost:8000/fhir/series")
+        annotator.save()
+
+        # update document reference uuid
+        document_references = annotator.update_patient_measurements("sub-001", category="DocumentReferenceMeasurement")
+        document = document_references[0]
+        assert isinstance(document, DocumentReferenceMeasurement)
+        document.set_uuid("sparc-patient-document-uuid-0001")
+        annotator.save()
 
     def test_workflow_annotator(self):
         annotator = Annotator("./dataset/workflow").workflow()
@@ -91,6 +126,6 @@ class Test:
 
 if __name__ == '__main__':
     test = Test()
-    test.test_measurements_annotator()
+    # test.test_measurements_annotator()
     test.test_measurements_annotator_update_mode()
     # test.test_workflow_annotator()
