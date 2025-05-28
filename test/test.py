@@ -126,6 +126,6 @@ class Test:
 
 if __name__ == '__main__':
     test = Test()
-    # test.test_measurements_annotator()
-    test.test_measurements_annotator_update_mode()
+    test.test_measurements_annotator()
+    # test.test_measurements_annotator_update_mode()
     # test.test_workflow_annotator()
