@@ -48,7 +48,7 @@ class Test:
         #                                                   code_system="https://loinc.org",
         #                                                   display="Cardiac output by US.2D+Calculated"))
         #
-        # annotator.add_measurements("sub-001", Measurement(value=ObservationValue(value_quantity=Quantity(value=72, unit="L/min", code="UCUM")), code="76565-1",
+        # annotator.add_measurements("sub-001", ObservationMeasurement(value=ObservationValue(value_quantity=Quantity(value=72, unit="L/min", code="UCUM")), code="76565-1",
         #                                                   code_system="https://loinc.org",
         #                                                   display="Cardiac output by US.2D+Calculated"))
 
