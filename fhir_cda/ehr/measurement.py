@@ -58,6 +58,10 @@ class ObservationMeasurement:
         self.display = display
         return self
 
+    def set_code(self, code: str):
+        self.code = code
+        return self
+
     def get(self):
         measurement = {
             "uuid": self.uuid,
@@ -99,8 +103,20 @@ class DocumentReferenceMeasurement:
         self.title = item.get("title", "")
         return self
 
-    def set_uuid(self, uuid):
+    def set_uuid(self, uuid: str):
         self.uuid = uuid
+        return self
+
+    def set_url(self, url: str):
+        self.url = url
+        return self
+
+    def set_content_type(self, content_type: str):
+        self.content_type = content_type
+        return self
+
+    def set_title(self, title: str):
+        self.title = title
         return self
 
     def get(self):

@@ -91,6 +91,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
     def automated_generating_imaging_study_measurement_by_scan_dataset(self):
         for path, patient in zip(self._patient_paths, self.elements["patients"]):
             patient["imagingStudy"] = self._analysis_imaging_study_samples(path)
+        return self
 
     @staticmethod
     def _analysis_imaging_study_samples(study):
@@ -102,6 +103,8 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             else:
                 dcm_sams = [sam for sam in sams if check_first_file_extension(sam) == "dcm"]
                 nrrd_sams = [sam for sam in sams if check_first_file_extension(sam) == "nrrd"]
+
+
             if len(dcm_sams) > 0:
                 imaging_study = ImagingStudyMeasurement(sample_details=dcm_sams, description="dcm")
                 if len(imaging_study.series) > 0:
