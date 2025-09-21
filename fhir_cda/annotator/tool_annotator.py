@@ -8,7 +8,7 @@ class ToolAnnotator(AbstractAnnotator, ABC):
     def __init__(self, dataset_path):
         super().__init__(dataset_path, "workflow_tool")
         self._descriptions = {}
-        self._metadata_path = Path(dataset_path, "workflow_tool.json")
+        self._metadata_path = self._root / "workflow_tool.json"
         self._get_description()
 
     def _get_description(self):
