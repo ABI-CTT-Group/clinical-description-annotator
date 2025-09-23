@@ -167,7 +167,7 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
         return self
 
     def update_dataset(self, field, value):
-        if field not in self._descriptions.get("dataset"):
+        if field not in self.elements.get("dataset"):
             raise ValueError(f"field {field} is not in descriptions['dataset']")
         else:
             self.elements["dataset"][field] = value

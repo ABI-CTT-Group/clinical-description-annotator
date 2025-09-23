@@ -1,10 +1,11 @@
 from pathlib import Path
-from .annotator import MeasurementAnnotator, WorkflowAnnotator
+from .annotator import MeasurementAnnotator, WorkflowAnnotator, WorkflowToolAnnotator
 
 
 class Annotator:
     measurement_annotator = MeasurementAnnotator
     workflow_annotator = WorkflowAnnotator
+    workflow_tool_annotator = WorkflowToolAnnotator
 
     def __init__(self, dataset_path):
         self.root = Path(dataset_path)
@@ -18,3 +19,6 @@ class Annotator:
 
     def workflow(self):
         return self.workflow_annotator(self.root)
+
+    def workflow_tool(self):
+        return self.workflow_tool_annotator(self.root)
