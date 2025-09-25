@@ -104,7 +104,6 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
                 dcm_sams = [sam for sam in sams if check_first_file_extension(sam) == "dcm"]
                 nrrd_sams = [sam for sam in sams if check_first_file_extension(sam) == "nrrd"]
 
-
             if len(dcm_sams) > 0:
                 imaging_study = ImagingStudyMeasurement(sample_details=dcm_sams, description="dcm")
                 if len(imaging_study.series) > 0:
@@ -215,6 +214,10 @@ class MeasurementAnnotator(AbstractAnnotator, ABC):
             raise ValueError(f"No patients found for {subject}")
         matched_patient = matched_patients[0]
         return matched_patient
+
+    def get_descriptions(self):
+        self._convert_elements_to_descriptions()
+        return self._descriptions
 
     def save(self, path=None):
         self._convert_elements_to_descriptions()

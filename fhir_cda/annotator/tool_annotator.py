@@ -14,15 +14,15 @@ class WorkflowToolAnnotator(AbstractAnnotator, ABC):
         metadata_path = self._metadata_path
         if not metadata_path.exists():
             self._descriptions["workflow_tool"] = {
-                    "uuid": "",
-                    "name": "",
-                    "title": "",
-                    "version": "",
-                    "description": "",
-                    "model": [],
-                    "software": [],
-                    "input": [],
-                    "output": []
+                "uuid": "",
+                "name": "",
+                "title": "",
+                "version": "",
+                "description": "",
+                "model": [],
+                "software": [],
+                "input": [],
+                "output": []
             }
         else:
             with open(metadata_path, "r") as f:
@@ -84,6 +84,9 @@ class WorkflowToolAnnotator(AbstractAnnotator, ABC):
             raise ValueError(
                 f"Value {value} is invalid. Expected a string or a list of strings (UUIDs), but got {type}.")
         return self
+
+    def get_descriptions(self):
+        return self._descriptions
 
     def save(self, path=None):
         super().save(path)

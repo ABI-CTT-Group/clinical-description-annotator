@@ -159,6 +159,10 @@ class WorkflowAnnotator(AbstractAnnotator, ABC):
             print(f"Get total {len(actions)} action, you can use .get() method to get action details")
             return actions
 
+    def get_descriptions(self):
+        self._convert_elements_to_descriptions()
+        return self._descriptions
+
     def save(self, path=None):
         self._convert_elements_to_descriptions()
         super().save(path)
