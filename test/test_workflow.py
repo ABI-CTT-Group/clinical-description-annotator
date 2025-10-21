@@ -61,7 +61,8 @@ class Test:
         action_5_inputs[1].set_resource_type("DocumentReference")
         action_5_inputs[2].set_resource_type("DocumentReference")
         action_5_outputs = action_5.annotate_output()
-        action_5_outputs[0].set_resource_type("Observation").set_system("https://loinc.org/").set_code("85904-1")
+        action_5_outputs[0].set_resource_type("Observation").set_system("https://loinc.org/").set_code(
+            "85904-1").set_unit("mm")
 
         action_6 = actions[5]
         pprint(action_6.get())
@@ -76,6 +77,8 @@ class Test:
         end_time = time.time()
         elapsed_time = end_time - start_time
         print(f"Function took {elapsed_time:.4f} seconds to complete.")
+
+        print(annotator.get_descriptions())
 
 
 if __name__ == '__main__':

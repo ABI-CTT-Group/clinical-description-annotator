@@ -43,13 +43,15 @@ class WorkflowActionOutput:
     def __init__(self, display: str,
                  resource_type: Literal["Observation", "ImagingStudy", "DocumentReference", ""] = "",
                  code: Optional = None,
-                 system: Optional = None):
+                 system: Optional = None,
+                 unit: Optional = None):
         if not isinstance(display, str):
             raise ValueError(f"display should be a string")
         self.resource_type = resource_type
         self.code = code
         self.system = system
         self.display = display
+        self.unit = unit
 
     def set_resource_type(self, resource_type: Literal[
         "Observation", "ImagingStudy", "DocumentReference", "DiagnosticReport"]):
@@ -71,16 +73,24 @@ class WorkflowActionOutput:
         self.system = system
         return self
 
+    def set_unit(self, unit: str):
+        if not isinstance(unit, str):
+            raise ValueError(f"unit should be a string")
+        self.unit = unit
+        return self
+
     def get(self):
         action_output = {
             "resource_type": self.resource_type,
             "display": self.display,
             "code": self.code,
             "system": self.system,
+            "unit": self.unit
         }
         if self.resource_type == "Observation":
             action_output["code"] = self.code
             action_output["system"] = self.system
+            action_output["unit"] = self.unit
         return {k: v for k, v in action_output.items() if v not in ("", None)}
 
 
