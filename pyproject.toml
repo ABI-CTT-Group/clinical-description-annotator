@@ -10,7 +10,13 @@ license = { file = "LICENSE" }
 keywords = ["fhir", "SPARC", "Clinic Description Annotator"]
 dynamic = ["version"]
 authors = [{ name = "Linkun Gao", email = "gaolinkun123@gmail.com" }]
-dependencies = ["pydicom==2.4.4", "pyyaml==6.0.2", "pathlib==1.0.1"]
+dependencies = [
+    "pydicom==2.4.4",
+    "pyyaml==6.0.2",
+    "pathlib==1.0.1",
+    "pandas>=2.3.3",
+    "openpyxl>=3.1.5",
+]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Web Environment",

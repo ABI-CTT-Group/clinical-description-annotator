@@ -1,5 +1,5 @@
-from typing import Optional
-from .elements import ObservationValue, ImagingStudySeries, ImagingStudySeriesInstance
+from typing import Optional, List
+from .elements import ObservationValue, ImagingStudySeries, ImagingStudySeriesInstance, DocumentAttachment
 import pydicom
 from pydicom.uid import UID
 from fhir_cda.terms import SNOMEDCT
@@ -11,12 +11,15 @@ from pathlib import Path
 class ObservationMeasurement:
     def __init__(self, value: Optional[ObservationValue] = None, code: Optional[str] = "",
                  code_system="http://loinc.org",
+                 unit: Optional[str] = None,
                  display: Optional[str] = None, uuid: Optional[str] = ""):
 
         if value is not None and not isinstance(value, ObservationValue):
             raise ValueError(f"value={value} is not an ObservationValue type")
         elif not isinstance(code, str):
             raise ValueError(f"code={code} is not an instance of type str")
+        elif unit is not None and not isinstance(unit, str):
+            raise ValueError(f"unit={unit} is not an instance of type str")
         elif display is not None and not isinstance(display, str):
             raise ValueError(f"display={display} is not an instance of type str")
         elif not isinstance(uuid, str):
@@ -26,6 +29,7 @@ class ObservationMeasurement:
         self.uuid = uuid
         self.value = value
         self.code = code
+        self.unit = unit
         self.code_system = code_system
         self.display = display
 
@@ -38,6 +42,7 @@ class ObservationMeasurement:
         self.code = item.get("code", "")
         self.display = item.get("display", "")
         self.code_system = item.get("codeSystem", "")
+        self.unit = item.get("unit", "")
         value = item.get("value", None)
         self.value = ObservationValue().set(value) if value is not None else None
         return self
@@ -48,6 +53,10 @@ class ObservationMeasurement:
 
     def set_value(self, value: ObservationValue):
         self.value = value
+        return self
+
+    def set_unit(self, unit: str):
+        self.unit = unit
         return self
 
     def set_code_system(self, code_system: str):
@@ -68,51 +77,48 @@ class ObservationMeasurement:
             "value": self.value.get(),
             "code": self.code,
             "codeSystem": self.code_system,
+            "unit": self.unit,
             "display": self.display if isinstance(self.display, str) else ""
         }
         return {k: v for k, v in measurement.items() if v is not None}
 
 
-class DocumentReferenceMeasurement:
-    def __init__(self, url: Optional[str] = "", content_type: Optional[str] = "", title: Optional[str] = "",
-                 uuid: Optional[str] = ""):
 
-        if not isinstance(url, str):
-            raise ValueError(f"url={url} is not an instance of type str")
-        elif not isinstance(content_type, str):
-            raise ValueError(f"content_type={content_type} is not an instance of type str")
-        elif not isinstance(title, str):
+class DocumentReferenceMeasurement:
+    def __init__(self, attachments: Optional[List[DocumentAttachment]] = None, title: Optional[str] = "",
+                 uuid: Optional[str] = ""):
+        if not (isinstance(attachments, list) and all(isinstance(item, DocumentAttachment) for item in attachments)):
+            raise ValueError(f"attachments={attachments} is not an instance of type list")
+        if not isinstance(title, str):
             raise ValueError(f"title={title} is not an instance of type str")
         elif not isinstance(uuid, str):
             raise ValueError(f"uuid={uuid} is not an instance of type str")
 
         self.measurement_type = "DocumentReferenceMeasurement"
         self.uuid = uuid
-        self.url = url
-        self.content_type = content_type
+        self.attachments = attachments
         self.title = title
 
     def __repr__(self):
         return (
-            f"DocumentReferenceMeasurement(uuid={self.uuid},url={self.url}, content_type={self.content_type}, title={self.title})")
+            f"DocumentReferenceMeasurement(uuid={self.uuid}, title={self.title})")
 
     def set(self, item):
         self.uuid = item.get("uuid", "")
-        self.url = item.get("url", "")
-        self.content_type = item.get("contentType", "")
         self.title = item.get("title", "")
+        self.attachments = item.get("attachments", [])
         return self
 
     def set_uuid(self, uuid: str):
         self.uuid = uuid
         return self
 
-    def set_url(self, url: str):
-        self.url = url
-        return self
-
-    def set_content_type(self, content_type: str):
-        self.content_type = content_type
+    def set_attachments(self, attachments: List[DocumentAttachment]):
+        if not isinstance(attachments, list):
+            raise ValueError(f"attachments={attachments} is not an instance of type list")
+        elif not all(isinstance(item, DocumentAttachment) for item in attachments):
+            raise ValueError(f"attachments={attachments}: some attachments are not an DocumentAttachment type")
+        self.attachments = attachments
         return self
 
     def set_title(self, title: str):
@@ -122,9 +128,8 @@ class DocumentReferenceMeasurement:
     def get(self):
         measurement = {
             "uuid": self.uuid,
-            "url": self.url,
-            "contentType": self.content_type,
-            "title": self.title
+            "title": self.title,
+            "attachments": [a.get() for a in self.attachments if isinstance(a, DocumentAttachment)]
         }
         return measurement
 
@@ -135,7 +140,7 @@ class ImagingStudyMeasurement:
     endpoint_uuid (ImagingStudy): Imaging Study endpoint Identifier, should be generated by digitaltwins-on-fhir and fhir-cda.
     endpoint_uuid (ImagingStudySeries): Imaging Study series endpoint Identifier, can be dataset's sample uuid which generated by digitaltwins platform or user.
 
-    sample_details: [{"uuid":str, "path":pathlib.Path}]
+    sample_details: str[] or Path[]
     """
 
     def __init__(self, uuid: str = "", sample_details: list = None, endpoint_url: str = "", description: str = ""):
@@ -243,10 +248,13 @@ class ImagingStudyMeasurement:
         try:
             dcm_files = list(sam["path"].glob("*.dcm"))
             nrrd_files = list(sam["path"].glob("*.nrrd"))
-            if len(dcm_files) < 1 and len(nrrd_files) < 1:
+            nii_files = list(sam["path"].glob("*.nii.gz"))
+            if len(dcm_files) < 1 and len(nrrd_files) < 1 and len(nii_files) < 1:
                 return
-            if len(dcm_files) > 0 and len(nrrd_files) > 0:
-                raise ValueError("dataset format error: Detected dcm and nrrd files under the same sample folder.")
+            if (len(dcm_files) > 0 and len(nrrd_files) > 0) or (len(dcm_files) > 0 and len(nii_files) > 0) or (
+                    len(nrrd_files) > 0 and len(nii_files) > 0):
+                raise ValueError(
+                    "dataset format error: Detected dcm, nii.gz and nrrd files under the same sample folder.")
 
             if len(dcm_files) >= 1:
                 s_dicom_file = pydicom.dcmread(dcm_files[0])
@@ -270,6 +278,15 @@ class ImagingStudyMeasurement:
                                        endpoint_uuid=sam["uuid"],
                                        name=sam["path"].name,
                                        number_of_instances=len(nrrd_files),
+                                       instances=[]
+                                       )
+                return s
+            if len(nii_files) >= 1:
+                s = ImagingStudySeries(uid=None,
+                                       endpoint_url="",
+                                       endpoint_uuid=sam["uuid"],
+                                       name=sam["path"].name,
+                                       number_of_instances=len(nii_files),
                                        instances=[]
                                        )
                 return s
