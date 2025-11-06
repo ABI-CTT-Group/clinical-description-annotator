@@ -17,6 +17,12 @@ class Test:
         print(start_time)
         fhir_note = "[{\"name\":\"extract_clinical_measurements\",\"id\":\"a810a616-1bca-4adb-9350-998b606e6860\",\"uuid\":\"sparc-tool-$07ef3cda-e90e-41ab-92d1-2c867027244b\",\"tool_fhir_note\":{\"name\":\"extract_clinical_measurements\",\"inputs\":[{\"name\":\"surface_mesh_ply_scapula\",\"resource\":\"DocumentReference\"},{\"name\":\"surface_mesh_ply_humerus\",\"resource\":\"DocumentReference\"},{\"name\":\"surface_mesh_ply_clavicle\",\"resource\":\"DocumentReference\"},{\"name\":\"surface_mesh_ply_thorax\",\"resource\":\"DocumentReference\"}],\"outputs\":[{\"name\":\"clinical_measurements_csv\",\"resource\":\"DocumentReference\",\"code\":\"\",\"system\":\"\",\"unit\":\"\"}]}},{\"name\":\"extract_clinical_measurements_csv\",\"id\":\"49092873-6386-48e3-8f4a-6fcb5978da2d\",\"uuid\":\"sparc-tool-$d5d32563-034c-4ca7-aaf1-2265328be251\",\"tool_fhir_note\":{\"name\":\"extract_clinical_measurements_csv\",\"inputs\":[{\"name\":\"clinical_measurements_csv\",\"resource\":\"DocumentReference\"}],\"outputs\":[{\"name\":\"l_inferior_angle\",\"resource\":\"Observation\",\"code\":\"000001\",\"system\":\"https://www.auckland.ac.nz/en/abi/our-research/research-groups-themes/12-Labours.html\",\"unit\":\"deg\"},{\"name\":\"l_version_angle\",\"resource\":\"Observation\",\"code\":\"000002\",\"system\":\"https://www.auckland.ac.nz/en/abi/our-research/research-groups-themes/12-Labours.html\",\"unit\":\"deg\"},{\"name\":\"r_inferior_angle\",\"resource\":\"Observation\",\"code\":\"000003\",\"system\":\"https://www.auckland.ac.nz/en/abi/our-research/research-groups-themes/12-Labours.html\",\"unit\":\"deg\"},{\"name\":\"r_version_angle\",\"resource\":\"Observation\",\"code\":\"000004\",\"system\":\"https://www.auckland.ac.nz/en/abi/our-research/research-groups-themes/12-Labours.html\",\"unit\":\"deg\"}]}}]"
         fhir = json.loads(fhir_note)
+        fhir[1]["tool_fhir_note"]["outputs"].extend([{'name': 'nrrd images', 'resource': 'ImagingStudy'},
+                                                     {'name': 'jpg image', 'resource': 'DocumentReference'},
+                                                     {'name': 'vtk model', 'resource': 'DocumentReference'},
+                                                     {'name': 'mhd model', 'resource': 'DocumentReference'},
+                                                     {'name': 'breast dicom', 'resource': "ImagingStudy"}])
+        pprint(fhir)
         assay_map = {
             "measurements": {
                 "sub-1": {
@@ -49,25 +55,64 @@ class Test:
                             "dataset": "sparc-dataset-001",
                             "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-001",
-                            "name": "sam-1"
+                            "name": "sam-1",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-1"
                         },
                         {
                             "dataset": "sparc-dataset-001",
                             "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-002",
-                            "name": "sam-2"
+                            "name": "sam-2",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-2"
                         },
                         {
                             "dataset": "sparc-dataset-001",
                             "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-003",
-                            "name": "sam-3"
+                            "name": "sam-3",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-3"
                         },
                         {
                             "dataset": "sparc-dataset-001",
                             "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-004",
-                            "name": "sam-4"
+                            "name": "sam-4",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-4"
+                        },
+                        {
+                            "dataset": "sparc-dataset-001",
+                            "dataset_name": "new dataset",
+                            "uuid": "sparc-result-sam-005",
+                            "name": "sam-5",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-5"
+                        },
+                        {
+                            "dataset": "sparc-dataset-001",
+                            "dataset_name": "new dataset",
+                            "uuid": "sparc-result-sam-006",
+                            "name": "sam-6",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-6"
+                        },
+                        {
+                            "dataset": "sparc-dataset-001",
+                            "dataset_name": "new dataset",
+                            "uuid": "sparc-result-sam-007",
+                            "name": "sam-7",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-7"
+                        },
+                        {
+                            "dataset": "sparc-dataset-001",
+                            "dataset_name": "new dataset",
+                            "uuid": "sparc-result-sam-008",
+                            "name": "sam-8",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-8"
+                        },
+                        {
+                            "dataset": "sparc-dataset-002",
+                            "dataset_name": "breast mri dcm",
+                            "uuid": "sparc-result-sam-009",
+                            "name": "sam-9",
+                            "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-9"
                         }
                     ]
                 }

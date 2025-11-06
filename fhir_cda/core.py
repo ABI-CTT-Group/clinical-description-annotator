@@ -48,7 +48,7 @@ class Annotator:
                                "uuid": "subject uuid (str)",
 
                                "sams": [
-                                   {"dataset": "dataset uuid (str)", "dataset_name": "dataset_name (str)", "uuid": "sample uuid (str)", "name": "sample name (str)"}
+                                   {"dataset": "dataset uuid (str)", "dataset_name": "dataset_name (str)", "uuid": "sample uuid (str)", "name": "sample name (str)", "url": "sample folder url (str)"}
                                ]
                            }
                        }

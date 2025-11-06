@@ -87,11 +87,13 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                 if not sample_dir.is_dir():
                     continue
                 sample_name = sample_dir.name
-                self._patients[patient_name][sample_name] = self._analysis_samples(sample_dir)
+                resource = self._analysis_samples(sample_dir)
+                if resource:
+                    self._patients[patient_name][sample_name] = resource
 
             for tool in self._mapping["workflow"].get("tools", []):
                 process_description = {
-                    "uuid": uuid.uuid4(),
+                    "uuid": str(uuid.uuid4()),
                     "tool_uuid": tool.get("uuid", ""),
                     "date": get_current_formated_time(),
                     "inputs": [],
@@ -121,28 +123,34 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
     def _analysis_samples(self, sam_dir):
         first_file_suffix = check_first_file_extension(sam_dir)
         if first_file_suffix:
-            if first_file_suffix == 'nii.gz' or first_file_suffix == "dcm" or first_file_suffix == "nrrd":
-                if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "ImagingStudy":
-                    warnings.warn(
-                        f"Annotation Error: the tool annotation shows this sample is '{self._sample_descriptions[sam_dir.name]['annotation']['resource']}' resource, but process annotator detect it should be 'ImagingStudy' resource.")
+            try:
+                if first_file_suffix == 'nii.gz' or first_file_suffix == "dcm" or first_file_suffix == "nrrd":
+                    if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "ImagingStudy":
+                        msg = f"Annotation Error: the tool annotation shows this sample is '{self._sample_descriptions[sam_dir.name]['annotation']['resource']}' resource, but process annotator detect it should be 'ImagingStudy' resource."
+                        warnings.warn(msg)
 
-                imaging_study = self._analysis_imaging_study_samples(sam_dir, first_file_suffix)
-                imaging_study["resource"].get_series()[0].set_name(self._sample_descriptions[sam_dir.name]["name"])
-                return imaging_study
-            elif first_file_suffix == 'txt':
-                if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "Observation":
-                    warnings.warn(
-                        f"Annotation Error: the tool annotation shows this sample is '{self._sample_descriptions[sam_dir.name]['annotation']['resource']}' resource, but process annotator detect it should be 'Observation' resource.")
+                    imaging_study = self._analysis_imaging_study_samples(sam_dir, first_file_suffix)
+                    imaging_study["resource"].get_series()[0].set_name(self._sample_descriptions[sam_dir.name]["name"])
+                    return imaging_study
+                elif first_file_suffix == 'txt':
+                    if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "Observation":
+                        msg = f"Annotation Error: the tool annotation shows this sample is '{self._sample_descriptions[sam_dir.name]['annotation']['resource']}' resource, but process annotator detect it should be 'Observation' resource."
+                        warnings.warn(msg)
 
-                ob = self._analysis_observation_samples(sam_dir, self._sample_descriptions[sam_dir.name]["annotation"])
-                return ob
-            else:
-                if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "DocumentReference":
-                    warnings.warn(
-                        f"Annotation Error: the tool annotation shows this sample is '{self._sample_descriptions[sam_dir.name]['annotation']['resource']}' resource, but process annotator detect it should be 'DocumentReference' resource.")
+                    ob = self._analysis_observation_samples(sam_dir,
+                                                            self._sample_descriptions[sam_dir.name]["annotation"])
+                    return ob
+                else:
+                    if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "DocumentReference":
+                        msg = f"Annotation Error: the tool annotation shows this sample is '{self._sample_descriptions[sam_dir.name]['annotation']['resource']}' resource, but process annotator detect it should be 'DocumentReference' resource."
+                        warnings.warn(msg)
 
-                document = self._analysis_document_samples(sam_dir)
-                return document
+                    document = self._analysis_document_samples(sam_dir)
+                    return document
+            except Exception as e:
+                msg = f"The outputs annotation is not match the real dataset samples: {e}"
+                warnings.warn(msg)
+                return None
         else:
             raise ValueError(f"No valid files found in sample directory: {sam_dir}")
 
@@ -152,6 +160,7 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                 (r for r in self._mapping["results"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
             return {
                 "resource": ImagingStudyMeasurement(uuid=result_sam.get("uuid", "") if result_sam else "",
+                                                    endpoint_url=result_sam.get("url", "") if result_sam else "",
                                                     sample_details=[sam_dir], description=first_file_suffix),
                 "sample_type": self._sample_descriptions[sam_dir.name]["name"],
                 "dataset": {
@@ -195,13 +204,14 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
 
     def _analysis_document_samples(self, sam_dir: Path):
         attachments = []
+        result_sam = next(
+            (r for r in self._mapping["results"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
         for f in sam_dir.iterdir():
             if f.is_file():
                 mime_type, encoding = mimetypes.guess_type(f)
                 attachments.append(
-                    DocumentAttachment(url="", content_type=mime_type if mime_type else "None"))
-        result_sam = next(
-            (r for r in self._mapping["results"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
+                    DocumentAttachment(url=f"{result_sam.get('url','') if result_sam else''}/{f.name}", content_type=mime_type if mime_type else "None"))
+
         return {
             "resource": DocumentReferenceMeasurement(attachments=attachments,
                                                      uuid=result_sam.get("uuid", "") if result_sam else "",
