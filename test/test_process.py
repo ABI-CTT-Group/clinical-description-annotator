@@ -22,7 +22,6 @@ class Test:
                                                      {'name': 'vtk model', 'resource': 'DocumentReference'},
                                                      {'name': 'mhd model', 'resource': 'DocumentReference'},
                                                      {'name': 'breast dicom', 'resource': "ImagingStudy"}])
-        pprint(fhir)
         assay_map = {
             "measurements": {
                 "sub-1": {
@@ -130,10 +129,11 @@ class Test:
             })
         annotator = Annotator("./dataset/process/ep2-workflow2-result").process(assay_map)
 
-        print("elements: ")
-        pprint(annotator.elements)
-        print("description: ")
-        pprint(annotator.get_descriptions())
+        annotator.update_study(uuid="sparc-study-ep2-001",
+                               name="investigating coupling between upper limb bones").update_assay(
+            uuid="sparc-assay-ep2-001",
+            name="Extracting the clinical measurements from the patient model").update_researcher(
+            uuid="sparc-researcher-ep2-001")
 
         # annotator.update_uuid("tool-1").update_title("create_nifti").update_version("1.0.0")
         # # EP1

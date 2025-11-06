@@ -73,6 +73,7 @@ class ObservationMeasurement:
 
     def get(self):
         measurement = {
+            "resourceType": "Observation",
             "uuid": self.uuid,
             "value": self.value.get(),
             "code": self.code,
@@ -127,6 +128,7 @@ class DocumentReferenceMeasurement:
 
     def get(self):
         measurement = {
+            "resourceType": "DocumentReference",
             "uuid": self.uuid,
             "title": self.title,
             "attachments": [a.get() for a in self.attachments if isinstance(a, DocumentAttachment)]
@@ -220,6 +222,7 @@ class ImagingStudyMeasurement:
 
     def get(self):
         imaging_study_measurement = {
+            "resourceType": "ImagingStudy",
             "uuid": self.uuid if isinstance(self.uuid, str) else "",
             "endpointUrl": self.endpoint_url if isinstance(self.endpoint_url, str) else "",
             "description": self.description if isinstance(self.description, str) else "",
