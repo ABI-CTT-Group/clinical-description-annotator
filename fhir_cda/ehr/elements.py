@@ -344,3 +344,32 @@ class WorkflowGoal:
             "description": self.description.get() if isinstance(self.description, str) else None,
         }
         return {k: v for k, v in goal.items() if v not in ("", None, [])}
+
+
+class DocumentAttachment:
+    def __init__(self, url: Optional[str] = "", content_type: Optional[str] = ""):
+        if not isinstance(url, str):
+            raise ValueError(f"url={url} is not an instance of type str")
+        elif not isinstance(content_type, str):
+            raise ValueError(f"content_type={content_type} is not an instance of type str")
+
+        self.url = url
+        self.content_type = content_type
+
+    def __repr__(self):
+        return (f"DocumentAttachment(url={self.url}, content_type={self.content_type})")
+
+    def set_url(self, url: str):
+        self.url = url
+        return self
+
+    def set_content_type(self, content_type: str):
+        self.content_type = content_type
+        return self
+
+    def get(self):
+        attachment = {
+            "url": self.url,
+            "contentType": self.content_type
+        }
+        return attachment
