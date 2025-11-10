@@ -34,8 +34,10 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
         self._descriptions["process"] = copy.deepcopy(self.elements["process"])
         for c in self._descriptions["process"]["cohort"]:
             for p in c["processes"]:
+                outputs = []
                 for o in p["outputs"]:
-                    o["resource"] = o["resource"].get()
+                    outputs.append(o.get())
+                p["outputs"] = outputs
 
     def _analysis_dataset(self):
         primary_folder = self._root / "primary"
@@ -51,7 +53,6 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                 "annotation": annotated_output,
             }
 
-        print(self._sample_descriptions)
         if not primary_folder.exists():
             self.elements = {}
             raise ValueError(
@@ -68,6 +69,10 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                 "uuid": "",
                 "name": ""
             },
+            "dataset": {
+                "uuid": "",
+                "name": ""
+            },
             "workflow": self._mapping["workflow"].get("uuid", ""),
             "cohort": []
         }
@@ -79,7 +84,7 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
             patient_name = patient_dir.name
             self._patients[patient_name] = {}
             cohort = {
-                "uuid": self._mapping["results"][patient_name]["uuid"],
+                "uuid": self._mapping["result"][patient_name]["uuid"],
                 "processes": []
             }
 
@@ -99,22 +104,20 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                     "inputs": [],
                     "outputs": []
                 }
-                for sam in self._mapping["measurements"][patient_name]['sams']:
-                    input_data = next((i for i in tool['inputs'] if i['name'] == sam['sample_type']), None)
-                    if input_data is None:
-                        continue
-                    process_description["inputs"].append({
-                        "uuid": sam.get("uuid", ""),
-                        "resource_type": input_data.get("resource", ""),
-                    })
+                for m in self._mapping["measurements"]:
+                    for sam in m[patient_name]['sams']:
+                        input_data = next((i for i in tool['inputs'] if i['name'] == sam['sample_type']), None)
+                        if input_data is None:
+                            continue
+                        process_description["inputs"].append({
+                            "uuid": sam.get("uuid", ""),
+                            "resource_type": input_data.get("resource", ""),
+                        })
                 for sam in self._patients[patient_name].values():
                     output_data = next((o for o in tool['outputs'] if o['name'] == sam['sample_type']), None)
                     if output_data is None:
                         continue
-                    process_description["outputs"].append({
-                        "resource": sam["resource"],
-                        "dataset": sam["dataset"],
-                    })
+                    process_description["outputs"].append(sam["resource"])
 
                 cohort["processes"].append(process_description)
 
@@ -157,16 +160,12 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
     def _analysis_imaging_study_samples(self, sam_dir: Path, first_file_suffix: str):
         if sam_dir.exists():
             result_sam = next(
-                (r for r in self._mapping["results"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
+                (r for r in self._mapping["result"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
             return {
                 "resource": ImagingStudyMeasurement(uuid=result_sam.get("uuid", "") if result_sam else "",
                                                     endpoint_url=result_sam.get("url", "") if result_sam else "",
                                                     sample_details=[sam_dir], description=first_file_suffix),
                 "sample_type": self._sample_descriptions[sam_dir.name]["name"],
-                "dataset": {
-                    "uuid": result_sam.get("dataset", "") if result_sam else "",
-                    "name": result_sam.get("dataset_name", "") if result_sam else "",
-                }
             }
 
         return None
@@ -184,7 +183,7 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
 
         try:
             result_sam = next(
-                (r for r in self._mapping["results"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
+                (r for r in self._mapping["result"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
             return {
                 "resource": ObservationMeasurement(
                     uuid=result_sam.get("uuid", "") if result_sam else "",
@@ -193,11 +192,7 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                     code_system=annotation.get("system", ""),
                     code=annotation.get("code", "")
                 ),
-                "sample_type": self._sample_descriptions[sam_dir.name]["name"],
-                "dataset": {
-                    "uuid": result_sam.get("dataset", "") if result_sam else "",
-                    "name": result_sam.get("dataset_name", "") if result_sam else "",
-                }
+                "sample_type": self._sample_descriptions[sam_dir.name]["name"]
             }
         except ValueError:
             raise ValueError("Observation measurement value only supports floats")
@@ -205,50 +200,58 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
     def _analysis_document_samples(self, sam_dir: Path):
         attachments = []
         result_sam = next(
-            (r for r in self._mapping["results"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
+            (r for r in self._mapping["result"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
         for f in sam_dir.iterdir():
             if f.is_file():
                 mime_type, encoding = mimetypes.guess_type(f)
                 attachments.append(
-                    DocumentAttachment(url=f"{result_sam.get('url','') if result_sam else''}/{f.name}", content_type=mime_type if mime_type else "None"))
+                    DocumentAttachment(url=f"{result_sam.get('url', '') if result_sam else ''}/{f.name}",
+                                       content_type=mime_type if mime_type else "None"))
 
         return {
             "resource": DocumentReferenceMeasurement(attachments=attachments,
                                                      uuid=result_sam.get("uuid", "") if result_sam else "",
                                                      title=self._sample_descriptions[sam_dir.name]["name"]),
-            "sample_type": self._sample_descriptions[sam_dir.name]["name"],
-            "dataset": {
-                "uuid": result_sam.get("dataset", "") if result_sam else "",
-                "name": result_sam.get("dataset_name", "") if result_sam else "",
-            }
+            "sample_type": self._sample_descriptions[sam_dir.name]["name"]
         }
 
-    def update_study(self, uuid: str = None, name: str = None):
-        if not isinstance(uuid, str):
-            raise ValueError("uuid must be a string")
+    def update_study(self, uid: str = None, name: str = None):
+        if not isinstance(uid, str):
+            raise ValueError("uid must be a string")
         if not isinstance(name, str):
             raise ValueError("name must be a string")
-        if uuid is not None:
-            self.elements["process"]["study"]["uuid"] = uuid
+        if uid is not None:
+            self.elements["process"]["study"]["uuid"] = uid
         if name is not None:
             self.elements["process"]["study"]["name"] = name
         return self
 
-    def update_assay(self, uuid: str = None, name: str = None):
-        if not isinstance(uuid, str):
-            raise ValueError("uuid must be a string")
+    def update_assay(self, uid: str = None, name: str = None):
+        if not isinstance(uid, str):
+            raise ValueError("uid must be a string")
         if not isinstance(name, str):
             raise ValueError("name must be a string")
-        if uuid is not None:
-            self.elements["process"]["assay"]["uuid"] = uuid
+        if uid is not None:
+            self.elements["process"]["assay"]["uuid"] = uid
         if name is not None:
             self.elements["process"]["assay"]["name"] = name
         return self
 
-    def update_researcher(self, uuid: str):
-        if not isinstance(uuid, str):
-            raise ValueError("uuid must be a string")
-        self.elements["process"]["researcher"]["uuid"] = uuid
+    def update_researcher(self, uid: str):
+        if not isinstance(uid, str):
+            raise ValueError("uid must be a string")
+        self.elements["process"]["researcher"]["uuid"] = uid
+        return self
+
+    def update_dataset(self, uid: str = None, name: str = None):
+        if not isinstance(uid, str):
+            raise ValueError("uid must be a string")
+        if not isinstance(name, str):
+            raise ValueError("name must be a string")
+        if uid is not None:
+            self.elements["process"]["dataset"]["uuid"] = uid
+        if name is not None:
+            self.elements["process"]["dataset"]["name"] = name
         return self
 
     def get_descriptions(self):

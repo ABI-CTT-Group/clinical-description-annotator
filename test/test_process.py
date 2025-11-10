@@ -10,6 +10,8 @@ import time
 import json
 
 
+# TODO fix bug: process annotator only annotate one dataset in the same time
+
 class Test:
 
     def test_workflow_annotator(self):
@@ -23,92 +25,76 @@ class Test:
                                                      {'name': 'mhd model', 'resource': 'DocumentReference'},
                                                      {'name': 'breast dicom', 'resource': "ImagingStudy"}])
         assay_map = {
-            "measurements": {
-                "sub-1": {
-                    "uuid": "sparc-result-sub-001",
-                    "sams": [
-                        {
-                            "uuid": "sparc-measurement-sam-001",
-                            "sample_type": "surface_mesh_ply_scapula"
-                        },
-                        {
-                            "uuid": "sparc-measurement-sam-002",
-                            "sample_type": "surface_mesh_ply_humerus"
-                        },
-                        {
-                            "uuid": "sparc-measurement-sam-003",
-                            "sample_type": "surface_mesh_ply_clavicle"
-                        },
-                        {
-                            "uuid": "sparc-measurement-sam-004",
-                            "sample_type": "surface_mesh_ply_thorax"
-                        }
-                    ]
+            "measurements": [
+                {
+                    "sub-1": {
+                        "uuid": "sparc-result-sub-001",
+                        "sams": [
+                            {
+                                "uuid": "sparc-measurement-sam-001",
+                                "sample_type": "surface_mesh_ply_scapula"
+                            },
+                            {
+                                "uuid": "sparc-measurement-sam-002",
+                                "sample_type": "surface_mesh_ply_humerus"
+                            },
+                            {
+                                "uuid": "sparc-measurement-sam-003",
+                                "sample_type": "surface_mesh_ply_clavicle"
+                            },
+                            {
+                                "uuid": "sparc-measurement-sam-004",
+                                "sample_type": "surface_mesh_ply_thorax"
+                            }
+                        ]
+                    }
                 }
-            },
-            "results": {
+            ],
+            "result": {
                 "sub-1": {
                     "uuid": "sparc-result-sub-001",
                     "sams": [
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-001",
                             "name": "sam-1",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-1"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-002",
                             "name": "sam-2",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-2"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-003",
                             "name": "sam-3",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-3"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-004",
                             "name": "sam-4",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-4"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-005",
                             "name": "sam-5",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-5"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-006",
                             "name": "sam-6",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-6"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-007",
                             "name": "sam-7",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-7"
                         },
                         {
-                            "dataset": "sparc-dataset-001",
-                            "dataset_name": "new dataset",
                             "uuid": "sparc-result-sam-008",
                             "name": "sam-8",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-8"
                         },
                         {
-                            "dataset": "sparc-dataset-002",
-                            "dataset_name": "breast mri dcm",
                             "uuid": "sparc-result-sam-009",
                             "name": "sam-9",
                             "url": "http://localhost:9000/workflow-tools/createmesh_44ad158d/primary/sub-1/sam-9"
@@ -129,12 +115,15 @@ class Test:
             })
         annotator = Annotator("./dataset/process/ep2-workflow2-result").process(assay_map)
 
-        annotator.update_study(uuid="sparc-study-ep2-001",
+        annotator.update_study(uid="sparc-study-ep2-001",
                                name="investigating coupling between upper limb bones").update_assay(
-            uuid="sparc-assay-ep2-001",
+            uid="sparc-assay-ep2-001",
             name="Extracting the clinical measurements from the patient model").update_researcher(
-            uuid="sparc-researcher-ep2-001")
+            uid="sparc-researcher-ep2-001")
 
+        # "dataset": "sparc-dataset-001",
+        # "dataset_name": "new dataset",
+        annotator.update_dataset(uid="sparc-dataset-001", name="new dataset")
         # annotator.update_uuid("tool-1").update_title("create_nifti").update_version("1.0.0")
         # # EP1
         annotator.save()
