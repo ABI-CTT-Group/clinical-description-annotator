@@ -111,7 +111,7 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                             continue
                         process_description["inputs"].append({
                             "uuid": sam.get("uuid", ""),
-                            "resource_type": input_data.get("resource", ""),
+                            "resourceType": input_data.get("resource", ""),
                         })
                 for sam in self._patients[patient_name].values():
                     output_data = next((o for o in tool['outputs'] if o['name'] == sam['sample_type']), None)
