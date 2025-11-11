@@ -103,7 +103,7 @@ class Test:
                 }
             },
             "workflow": {
-                "uuid": "sparc-workflow-001",
+                "uuid": "sparc-workflow-$63780902-1de3-4f83-87cc-0dcb4e13850e",
                 "tools": []
             }
         }

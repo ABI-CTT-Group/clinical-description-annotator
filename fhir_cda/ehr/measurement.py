@@ -84,34 +84,43 @@ class ObservationMeasurement:
         return {k: v for k, v in measurement.items() if v is not None}
 
 
-
 class DocumentReferenceMeasurement:
-    def __init__(self, attachments: Optional[List[DocumentAttachment]] = None, title: Optional[str] = "",
-                 uuid: Optional[str] = ""):
+    def __init__(self, attachments: Optional[List[DocumentAttachment]] = None,
+                 uuid: Optional[str] = "", description: Optional[str] = None, display:Optional[str] = None):
         if not (isinstance(attachments, list) and all(isinstance(item, DocumentAttachment) for item in attachments)):
             raise ValueError(f"attachments={attachments} is not an instance of type list")
-        if not isinstance(title, str):
-            raise ValueError(f"title={title} is not an instance of type str")
-        elif not isinstance(uuid, str):
+        if not isinstance(uuid, str):
             raise ValueError(f"uuid={uuid} is not an instance of type str")
+        if description is not None and not isinstance(description, str):
+            raise ValueError(f"description={description} is not an instance of type str")
+        if display is not None and not isinstance(display, str):
+            raise ValueError(f"display={display} is not an instance of type str")
 
         self.measurement_type = "DocumentReferenceMeasurement"
         self.uuid = uuid
+        self.description = description
         self.attachments = attachments
-        self.title = title
+        self.display = display
 
     def __repr__(self):
         return (
-            f"DocumentReferenceMeasurement(uuid={self.uuid}, title={self.title})")
+            f"DocumentReferenceMeasurement(uuid={self.uuid}")
 
     def set(self, item):
         self.uuid = item.get("uuid", "")
-        self.title = item.get("title", "")
         self.attachments = item.get("attachments", [])
         return self
 
     def set_uuid(self, uuid: str):
         self.uuid = uuid
+        return self
+
+    def set_description(self, description: str):
+        self.description = description
+        return self
+
+    def set_display(self, display: str):
+        self.display = display
         return self
 
     def set_attachments(self, attachments: List[DocumentAttachment]):
@@ -122,15 +131,12 @@ class DocumentReferenceMeasurement:
         self.attachments = attachments
         return self
 
-    def set_title(self, title: str):
-        self.title = title
-        return self
-
     def get(self):
         measurement = {
             "resourceType": "DocumentReference",
             "uuid": self.uuid,
-            "title": self.title,
+            "description": self.description,
+            "display": self.display,
             "attachments": [a.get() for a in self.attachments if isinstance(a, DocumentAttachment)]
         }
         return measurement
@@ -145,7 +151,8 @@ class ImagingStudyMeasurement:
     sample_details: str[] or Path[]
     """
 
-    def __init__(self, uuid: str = "", sample_details: list = None, endpoint_url: str = "", description: str = ""):
+    def __init__(self, uuid: str = "", sample_details: list = None, endpoint_url: str = "", description: str = "",
+                 display: Optional[str] = ""):
         if sample_details is not None and not isinstance(sample_details, list):
             raise ValueError(f"samples={sample_details} is not an instance of type list")
         if not isinstance(uuid, str):
@@ -154,12 +161,15 @@ class ImagingStudyMeasurement:
             raise ValueError(f"description={description} is not an instance of type str")
         if endpoint_url is not None and not isinstance(endpoint_url, str):
             raise ValueError(f"endpoint_url={endpoint_url} is not an instance of type str")
+        if display is not None and not isinstance(display, str):
+            raise ValueError(f"display={display} is not an instance of type str")
 
         self.measurement_type = "ImagingStudyMeasurement"
         self.uuid = uuid
         self.endpoint_url = endpoint_url
         self.description = description
         self.series = []
+        self.display = display
         self._samples = []
 
         if sample_details is not None:
@@ -220,12 +230,17 @@ class ImagingStudyMeasurement:
         self.description = description
         return self
 
+    def set_display(self, display):
+        self.display = display
+        return self
+
     def get(self):
         imaging_study_measurement = {
             "resourceType": "ImagingStudy",
             "uuid": self.uuid if isinstance(self.uuid, str) else "",
             "endpointUrl": self.endpoint_url if isinstance(self.endpoint_url, str) else "",
             "description": self.description if isinstance(self.description, str) else "",
+            "display": self.display if isinstance(self.display, str) else "",
             "series": [s.get() for s in self.series if isinstance(s, ImagingStudySeries)] if isinstance(self.series,
                                                                                                         list) else [],
         }

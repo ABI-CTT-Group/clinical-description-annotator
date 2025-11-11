@@ -49,7 +49,7 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
             if annotated_output is None:
                 continue
             self._sample_descriptions[key] = {
-                "name": sample_description[key],
+                "sample_type": sample_description[key],
                 "annotation": annotated_output,
             }
 
@@ -133,7 +133,8 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
                         warnings.warn(msg)
 
                     imaging_study = self._analysis_imaging_study_samples(sam_dir, first_file_suffix)
-                    imaging_study["resource"].get_series()[0].set_name(self._sample_descriptions[sam_dir.name]["name"])
+                    imaging_study["resource"].get_series()[0].set_name(
+                        self._sample_descriptions[sam_dir.name]["sample_type"])
                     return imaging_study
                 elif first_file_suffix == 'txt':
                     if self._sample_descriptions[sam_dir.name]["annotation"]["resource"] != "Observation":
@@ -161,11 +162,13 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
         if sam_dir.exists():
             result_sam = next(
                 (r for r in self._mapping["result"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
+            sample_type = self._sample_descriptions[sam_dir.name]["sample_type"]
             return {
                 "resource": ImagingStudyMeasurement(uuid=result_sam.get("uuid", "") if result_sam else "",
                                                     endpoint_url=result_sam.get("url", "") if result_sam else "",
-                                                    sample_details=[sam_dir], description=first_file_suffix),
-                "sample_type": self._sample_descriptions[sam_dir.name]["name"],
+                                                    sample_details=[sam_dir], description=first_file_suffix,
+                                                    display=sample_type),
+                "sample_type": sample_type,
             }
 
         return None
@@ -184,15 +187,17 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
         try:
             result_sam = next(
                 (r for r in self._mapping["result"][sam_dir.parent.name]["sams"] if r["name"] == sam_dir.name), None)
+            sample_type = self._sample_descriptions[sam_dir.name]["sample_type"]
             return {
                 "resource": ObservationMeasurement(
                     uuid=result_sam.get("uuid", "") if result_sam else "",
                     value=ObservationValue(value_quantity=Quantity(value=float(value), unit=annotation.get("unit", ""),
                                                                    code=annotation.get("unit", ""))),
                     code_system=annotation.get("system", ""),
-                    code=annotation.get("code", "")
+                    code=annotation.get("code", ""),
+                    display=sample_type
                 ),
-                "sample_type": self._sample_descriptions[sam_dir.name]["name"]
+                "sample_type": sample_type
             }
         except ValueError:
             raise ValueError("Observation measurement value only supports floats")
@@ -205,14 +210,17 @@ class ProcessAnnotator(AbstractAnnotator, ABC):
             if f.is_file():
                 mime_type, encoding = mimetypes.guess_type(f)
                 attachments.append(
-                    DocumentAttachment(url=f"{result_sam.get('url', '') if result_sam else ''}/{f.name}",
+                    DocumentAttachment(title=f.name, url=f"{result_sam.get('url', '') if result_sam else ''}/{f.name}",
                                        content_type=mime_type if mime_type else "None"))
+
+        sample_type = self._sample_descriptions[sam_dir.name]["sample_type"]
 
         return {
             "resource": DocumentReferenceMeasurement(attachments=attachments,
                                                      uuid=result_sam.get("uuid", "") if result_sam else "",
-                                                     title=self._sample_descriptions[sam_dir.name]["name"]),
-            "sample_type": self._sample_descriptions[sam_dir.name]["name"]
+                                                     description=self._sample_descriptions[sam_dir.name][
+                                                         "sample_type"], display=sample_type),
+            "sample_type": sample_type
         }
 
     def update_study(self, uid: str = None, name: str = None):
