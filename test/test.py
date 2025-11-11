@@ -2,7 +2,7 @@ from fhir_cda import Annotator
 from fhir_cda.ehr.elements import ImagingStudySeries
 from fhir_cda.utils import check_first_file_extension
 from fhir_cda.ehr import ObservationMeasurement, ObservationValue, Quantity, DocumentReferenceMeasurement, \
-    ImagingStudyMeasurement
+    ImagingStudyMeasurement, DocumentAttachment
 from pathlib import Path
 from typing import Union
 from pprint import pprint
@@ -17,30 +17,36 @@ class Test:
         # annotator = Annotator(r"C:\Users\lgao142\Desktop\Development\DigitalTWIN tools\digitalTwin-fhir-adapter\test\dataset\ep4\measurements").measurements()
 
         # EP4
-        m = ObservationMeasurement(value=ObservationValue(value_quantity=Quantity(value=28, unit="year", code="a")),
+        m = ObservationMeasurement(
+            uuid="sparc-measurement-sam-001",
+            value=ObservationValue(value_quantity=Quantity(value=28, unit="year", code="a")),
                                    code="30525-0")
         annotator.add_measurements(["sub-001"], [m]).save()
 
-        m1 = ObservationMeasurement(value=ObservationValue(value_quantity=Quantity(value=33, unit="year", code="a")),
+        m1 = ObservationMeasurement(
+            uuid="sparc-measurement-sam-002",
+            value=ObservationValue(value_quantity=Quantity(value=33, unit="year", code="a")),
                                     code="30525-0")
-        annotator.add_measurements(["sub-002"], [m1]).save()
+        annotator.add_measurements(["sub-001"], [m1]).save()
 
         # Add measurements with uuid by user
         m2 = ObservationMeasurement(
-            uuid="sparc-xxx-1111",
+            uuid="sparc-measurement-sam-003",
             value=ObservationValue(
                 value_string="this the test value."),
             display="test value string with uuid"
         )
         annotator.add_measurements("sub-001", m2).save()
 
-        annotator.add_measurements(["sub-001", "sub-002"], ObservationMeasurement(
-            value=ObservationValue(value_quantity=Quantity(value=175, unit="cm", code="cm")), code="8302-2",
-            display="Body height"))
+        # annotator.add_measurements(["sub-001", "sub-002"], ObservationMeasurement(
+        #     value=ObservationValue(value_quantity=Quantity(value=175, unit="cm", code="cm")), code="8302-2",
+        #     display="Body height"))
         m3 = DocumentReferenceMeasurement(
-            url="https://example.org/files/mesh-breast-surface-df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
-            content_type="model/obj",
-            title="Breast Surface Mesh")
+            uuid="sparc-measurement-sam-004",
+            attachments=[DocumentAttachment(
+                url="https://example.org/files/mesh-breast-surface-df0c4efd-69a6-428a-ba70-786caecfadfb.obj",
+                content_type="model/obj")],
+            description="Breast Surface Mesh")
         annotator.add_measurements(["sub-001"], [m3])
 
         # EP1
@@ -53,11 +59,11 @@ class Test:
         #                                                   display="Cardiac output by US.2D+Calculated"))
 
         # add ImagingStudy Measurement automatically by scan dataset
-        annotator.automated_generating_imaging_study_measurement_by_scan_dataset()
+        # annotator.automated_generating_imaging_study_measurement_by_scan_dataset()
 
         # add ImagingStudy Measurement manually
         dcm_samples = [{"uuid": "jjshgsh", "path": "./dataset/dataset-sparc/primary/sub-001/sam-001"}]
-        mi = ImagingStudyMeasurement(uuid="sparc-imaging-study-11981",
+        mi = ImagingStudyMeasurement(uuid="sparc-measurement-sam-005",
                                      sample_details=dcm_samples,
                                      description="test dcm for manual imaging study",
                                      endpoint_url="https://example.org/files/imagingstudy/1"
@@ -73,7 +79,13 @@ class Test:
         #                              endpoint_url="",
         #                              description="dcm")
         # annotator.add_measurements(["sub-001"], [m4])
-
+        annotator.update_dataset("uuid", "sparc-ep2-dataset-1")
+        annotator.update_patient("sub-001", "uuid","sparc-result-sub-001")
+        annotator.update_patient("sub-002", "uuid", "sparc-result-sub-002")
+        annotator.update_patient("sub-003", "uuid", "sparc-result-sub-003")
+        annotator.update_patient("sub-004", "uuid", "sparc-result-sub-004")
+        annotator.update_patient("sub-005", "uuid", "sparc-result-sub-005")
+        annotator.update_patient("sub-006", "uuid", "sparc-result-sub-006")
         annotator.save()
 
         end_time = time.time()

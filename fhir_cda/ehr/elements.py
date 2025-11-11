@@ -347,17 +347,20 @@ class WorkflowGoal:
 
 
 class DocumentAttachment:
-    def __init__(self, url: Optional[str] = "", content_type: Optional[str] = ""):
+    def __init__(self, title: Optional[str] = "", url: Optional[str] = "", content_type: Optional[str] = ""):
         if not isinstance(url, str):
             raise ValueError(f"url={url} is not an instance of type str")
         elif not isinstance(content_type, str):
             raise ValueError(f"content_type={content_type} is not an instance of type str")
+        elif not isinstance(title, str):
+            raise ValueError(f"title={title} is not an instance of type str")
 
+        self.title = title
         self.url = url
         self.content_type = content_type
 
     def __repr__(self):
-        return (f"DocumentAttachment(url={self.url}, content_type={self.content_type})")
+        return (f"DocumentAttachment(title={self.title}, url={self.url}, content_type={self.content_type})")
 
     def set_url(self, url: str):
         self.url = url
@@ -367,8 +370,13 @@ class DocumentAttachment:
         self.content_type = content_type
         return self
 
+    def set_title(self, title: str):
+        self.title = title
+        return self
+
     def get(self):
         attachment = {
+            "title": self.title,
             "url": self.url,
             "contentType": self.content_type
         }
